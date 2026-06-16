@@ -1,0 +1,96 @@
+{
+  "game_title": "O Filho do Dono",
+  "book": "Denzel 1 - O Filho do Dono",
+  "demo_scope": "Capítulo 1 - O Despertar",
+  "notes": [
+    "Usar a versão original de Denzel 1 como base narrativa, porque é mais rica e cinematográfica.",
+    "O Capítulo 1 original tem uma repetição parcial da abertura; deve ser limpo antes de virar roteiro final.",
+    "As imagens existentes funcionam melhor como cutscenes/retratos, não como sprites pequenos de mapa."
+  ],
+  "characters": [
+    {
+      "key": "denzel",
+      "name": "Denzel",
+      "role": "Protagonista",
+      "map_sprite": "sprite pequeno criado em pixel art",
+      "portrait": "assets/cover.jpg"
+    },
+    {
+      "key": "maria",
+      "name": "Maria",
+      "role": "Mãe de Denzel; revela o sonho das duas chamas",
+      "map_sprite": "sprite NPC",
+      "portrait": null
+    },
+    {
+      "key": "lurei",
+      "name": "Lurei",
+      "role": "Irmão de Denzel; raptado no ataque a Aldara",
+      "map_sprite": "sprite NPC/criança",
+      "portrait": null
+    },
+    {
+      "key": "velho_sabio",
+      "name": "Velho Sábio",
+      "role": "Guia espiritual; reconhece o despertar da luz",
+      "map_sprite": "sprite NPC",
+      "portrait": "assets/cajado.jpg"
+    },
+    {
+      "key": "kraidus",
+      "name": "Kraidus",
+      "role": "Vilão principal do arco Denzel 1",
+      "map_sprite": "boss sprite",
+      "portrait": "assets/denzelvskraidus.jpg"
+    }
+  ],
+  "chapter_1_demo_quests": [
+    {
+      "id": "talk_maria",
+      "title": "Caminha com Maria até ao Rio Lúmen",
+      "objective": "Falar com Maria junto ao rio.",
+      "completion": "Diálogo do sonho das duas chamas."
+    },
+    {
+      "id": "return_home",
+      "title": "Regressa a Aldara",
+      "objective": "Voltar à aldeia depois dos gritos.",
+      "completion": "Evento do ataque demoníaco."
+    },
+    {
+      "id": "find_father",
+      "title": "Procura a tua família",
+      "objective": "Entrar na casa destruída.",
+      "completion": "Pai revela que Lurei foi levado."
+    },
+    {
+      "id": "escape_forest",
+      "title": "Foge para a floresta",
+      "objective": "Sair pela passagem norte.",
+      "completion": "Encontro com o Velho Sábio."
+    },
+    {
+      "id": "accept_call",
+      "title": "Aceita o chamado",
+      "objective": "Falar com o Velho Sábio.",
+      "completion": "Denzel parte para o treino."
+    }
+  ],
+  "maps": [
+    {
+      "key": "aldara",
+      "name": "Aldeia de Aldara",
+      "purpose": "Introdução da família, vida simples e ataque inicial."
+    },
+    {
+      "key": "rio_lumen",
+      "name": "Rio Lúmen",
+      "purpose": "Cena íntima entre Maria e Denzel; revelação do sonho."
+    },
+    {
+      "key": "floresta_fuga",
+      "name": "Floresta de Aldara",
+      "purpose": "Fuga, transição e encontro com o Velho Sábio."
+    }
+  ]
+}

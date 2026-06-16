@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Preview Mapa Personagens — Base v17</title>
+  <style>
+    :root {
+      --bg: #10131d;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --gold: #facc15;
+      --panel: rgba(255,255,255,.05);
+      --panel-border: rgba(255,255,255,.08);
+      --btn: #1f2937;
+      --btn-border: rgba(255,255,255,.08);
+      --btn-active: #334155;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(250, 204, 21, .10), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(126, 34, 206, .14), transparent 40%),
+        var(--bg);
+      color: var(--text);
+      padding: 24px;
+    }
+
+    header, .grid, .notes {
+      max-width: 1240px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    header { margin-bottom: 22px; }
+    h1 {
+      margin: 0 0 6px;
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1;
+    }
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      border: 1px solid var(--panel-border);
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: 0 18px 44px rgba(0,0,0,.24);
+    }
+
+    .stage {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 14px;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px),
+        linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+        #202436;
+      background-size: 24px 24px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      touch-action: none;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      image-rendering: pixelated;
+      cursor: grab;
+    }
+
+    canvas.dragging {
+      cursor: grabbing;
+    }
+
+    h2 {
+      margin: 12px 0 3px;
+      font-size: 18px;
+    }
+
+    .tag {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: rgba(250, 204, 21, .12);
+      color: #fde68a;
+      font-weight: 800;
+      font-size: 12px;
+    }
+
+    .controls {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    button {
+      border: 1px solid var(--btn-border);
+      background: var(--btn);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 8px 10px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    button.active {
+      background: var(--btn-active);
+      outline: 2px solid rgba(250, 204, 21, .35);
+    }
+
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    .notes {
+      margin-top: 22px;
+      background: rgba(0,0,0,.22);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 18px;
+      padding: 16px;
+      color: var(--muted);
+    }
+
+    code { color: #fde68a; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Preview no mapa — personagens</h1>
+    <p>
+      Baixei um pouco mais os personagens no ecrã e adicionei modo interativo:
+      agora podes ver <strong>frente / costas / esquerda / direita</strong> e também
+      <strong>arrastar o personagem no canvas</strong> para o mexer e ver melhor.
+    </p>
+  </header>
+
+  <main class="grid" id="grid"></main>
+
+  <section class="notes">
+    <strong>Como usar:</strong>
+    <p>
+      Usa os botões para mudar a direção. Também podes arrastar qualquer personagem dentro do quadro.
+      Este ficheiro é só para veres os personagens no mapa antes de aplicar no jogo inteiro.
+    </p>
+  </section>
+
+<script>
+const CHARACTERS = [
+  { key:"denzel_base", title: "Denzel — normal", tag: "mais magro", renderType: "denzel", options: { wings:false, mark:false, halo:false } },
+  { key:"denzel_mark", title: "Denzel — Filho do Dono", tag: "marca discreta", renderType: "denzel", options: { wings:false, mark:true, halo:false } },
+  { key:"denzel_wings", title: "Denzel — Asas de Luz", tag: "asas + auréola", renderType: "denzel", options: { wings:true, mark:true, halo:true } },
+
+  { key:"lurei_normal", title: "Lurei — normal", tag: "roupa preta, sem cajado", renderType: "lurei", options: { form:"normal" } },
+  { key:"lurei_warrior", title: "Lurei — guerreiro sombrio", tag: "armadura preta", renderType: "lurei", options: { form:"guerreiro" } },
+  { key:"lurei_dominated", title: "Lurei — dominado", tag: "demónio + olhos vermelhos", renderType: "lurei", options: { form:"dominado" } },
+  { key:"lurei_fallen", title: "Lurei — caído em sombra", tag: "antes da cura", renderType: "lurei", options: { form:"caido" } },
+  { key:"lurei_purified", title: "Lurei — purificado", tag: "preto com luz", renderType: "lurei", options: { form:"purificado" } },
+
+  { key:"nilzin_normal", title: "Nilzin — normal", tag: "cabelo até ao ombro", renderType: "nilzin", options: { form:"normal" } },
+  { key:"nilzin_shadow", title: "Nilzin — sombra", tag: "aura negra", renderType: "nilzin", options: { form:"sombra" } },
+  { key:"nilzin_queen", title: "Nilzin — rainha das sombras", tag: "sem coroa", renderType: "nilzin", options: { form:"rainha" } },
+
+  { key:"kraidus", title: "Kraidus", tag: "rei demoníaco", renderType: "kraidus", options: {} },
+  { key:"divan", title: "Divan", tag: "sem cajado", renderType: "divan", options: {} },
+  { key:"sage", title: "Velho Sábio", tag: "pele clara/branca", renderType: "sage", options: {} }
+];
+
+const W = 320;
+const H = 320;
+const states = new Map();
+
+function setup() {
+  const grid = document.getElementById("grid");
+
+  CHARACTERS.forEach((item) => {
+    const card = document.createElement("article");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="stage"><canvas width="${W}" height="${H}"></canvas></div>
+      <h2>${item.title}</h2>
+      <p><span class="tag">${item.tag}</span></p>
+      <div class="controls">
+        <div class="row dir-row">
+          <button data-dir="down">Frente</button>
+          <button data-dir="up">Costas</button>
+          <button data-dir="left">Esquerda</button>
+          <button data-dir="right">Direita</button>
+        </div>
+        <div class="row">
+          <button data-move="up">↑</button>
+          <button data-move="left">←</button>
+          <button data-move="down">↓</button>
+          <button data-move="right">→</button>
+          <button data-reset="1">Reset</button>
+        </div>
+        <div class="hint">Também podes arrastar o personagem diretamente no quadro.</div>
+      </div>
+    `;
+    grid.appendChild(card);
+
+    const canvas = card.querySelector("canvas");
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+
+    const state = {
+      item,
+      canvas,
+      ctx,
+      x: 160,
+      y: 138,   // mais baixo
+      direction: "down",
+      dragging: false,
+      dragOffsetX: 0,
+      dragOffsetY: 0,
+    };
+    states.set(item.key, state);
+
+    bindControls(card, state);
+    bindDrag(state);
+    render(state);
+  });
+}
+
+function bindControls(card, state) {
+  const dirButtons = [...card.querySelectorAll("[data-dir]")];
+  dirButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.direction = btn.dataset.dir;
+      updateDirButtons(dirButtons, state.direction);
+      render(state);
+    });
+  });
+  updateDirButtons(dirButtons, state.direction);
+
+  card.querySelectorAll("[data-move]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const step = 8;
+      const move = btn.dataset.move;
+      if (move === "up") state.y -= step;
+      if (move === "down") state.y += step;
+      if (move === "left") state.x -= step;
+      if (move === "right") state.x += step;
+      clampState(state);
+      render(state);
+    });
+  });
+
+  card.querySelector("[data-reset]").addEventListener("click", () => {
+    state.x = 160;
+    state.y = 138;
+    state.direction = "down";
+    updateDirButtons(dirButtons, state.direction);
+    render(state);
+  });
+}
+
+function updateDirButtons(buttons, current) {
+  buttons.forEach(btn => btn.classList.toggle("active", btn.dataset.dir === current));
+}
+
+function bindDrag(state) {
+  const canvas = state.canvas;
+
+  function getPos(evt) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+    const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+    return {
+      x: ((clientX - rect.left) / rect.width) * canvas.width,
+      y: ((clientY - rect.top) / rect.height) * canvas.height,
+    };
+  }
+
+  function start(evt) {
+    evt.preventDefault();
+    const p = getPos(evt);
+    state.dragging = true;
+    state.dragOffsetX = p.x - state.x;
+    state.dragOffsetY = p.y - state.y;
+    canvas.classList.add("dragging");
+  }
+
+  function move(evt) {
+    if (!state.dragging) return;
+    evt.preventDefault();
+    const p = getPos(evt);
+    state.x = p.x - state.dragOffsetX;
+    state.y = p.y - state.dragOffsetY;
+    clampState(state);
+    render(state);
+  }
+
+  function end() {
+    state.dragging = false;
+    canvas.classList.remove("dragging");
+  }
+
+  canvas.addEventListener("mousedown", start);
+  window.addEventListener("mousemove", move);
+  window.addEventListener("mouseup", end);
+
+  canvas.addEventListener("touchstart", start, { passive: false });
+  window.addEventListener("touchmove", move, { passive: false });
+  window.addEventListener("touchend", end);
+}
+
+function clampState(state) {
+  state.x = Math.max(70, Math.min(250, state.x));
+  state.y = Math.max(90, Math.min(210, state.y));
+}
+
+function render(state) {
+  const { ctx, item, x, y, direction } = state;
+  drawStage(ctx);
+
+  switch(item.renderType) {
+    case "denzel":
+      drawDenzel(ctx, { ...item.options, x, y, direction });
+      break;
+    case "lurei":
+      drawLurei(ctx, { ...item.options, x, y, direction });
+      break;
+    case "nilzin":
+      drawNilzin(ctx, { ...item.options, x, y, direction });
+      break;
+    case "kraidus":
+      drawKraidus(ctx, { x, y, direction });
+      break;
+    case "divan":
+      drawDivan(ctx, { x, y, direction });
+      break;
+    case "sage":
+      drawSage(ctx, { x, y, direction });
+      break;
+  }
+}
+
+function drawStage(ctx) {
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = "#1d2232";
+  ctx.fillRect(0,0,W,H);
+
+  ctx.fillStyle = "#2f3a46";
+  ctx.fillRect(0, 226, W, 94);
+
+  ctx.fillStyle = "rgba(255,255,255,.04)";
+  for (let i = 0; i < 18; i++) {
+    ctx.fillRect((i * 37) % W, 242 + ((i * 17) % 54), 18, 4);
+  }
+
+  const g = ctx.createRadialGradient(160, 165, 10, 160, 165, 130);
+  g.addColorStop(0, "rgba(250,204,21,.10)");
+  g.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = g;
+  ctx.fillRect(0,0,W,H);
+}
+
+function rect(ctx,x,y,w,h,c) {
+  ctx.fillStyle = c;
+  ctx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h));
+}
+
+function ellipse(ctx,x,y,rx,ry,c) {
+  ctx.fillStyle = c;
+  ctx.beginPath();
+  ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);
+  ctx.fill();
+}
+
+function poly(ctx, pts, c) {
+  ctx.fillStyle = c;
+  ctx.beginPath();
+  ctx.moveTo(pts[0][0], pts[0][1]);
+  pts.slice(1).forEach(([x,y]) => ctx.lineTo(x,y));
+  ctx.closePath();
+  ctx.fill();
+}
+
+function strokePoly(ctx, pts, c, lw=2) {
+  ctx.strokeStyle = c;
+  ctx.lineWidth = lw;
+  ctx.beginPath();
+  ctx.moveTo(pts[0][0], pts[0][1]);
+  pts.slice(1).forEach(([x,y]) => ctx.lineTo(x,y));
+  ctx.closePath();
+  ctx.stroke();
+}
+
+function glow(ctx, x, y, r, color) {
+  const g = ctx.createRadialGradient(x,y,0,x,y,r);
+  g.addColorStop(0,color);
+  g.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(x,y,r,0,Math.PI*2);
+  ctx.fill();
+}
+
+function drawWing(ctx, x, y, side, scale=1) {
+  const dir = side === "left" ? -1 : 1;
+  glow(ctx, x + dir * 42 * scale, y - 8 * scale, 48 * scale, "rgba(250,204,21,.18)");
+  const pts = [
+    [x + dir*4*scale, y - 4*scale],
+    [x + dir*38*scale, y - 28*scale],
+    [x + dir*70*scale, y - 35*scale],
+    [x + dir*60*scale, y - 5*scale],
+    [x + dir*31*scale, y + 14*scale],
+  ];
+  poly(ctx, pts, "rgba(248,250,252,.96)");
+  strokePoly(ctx, pts, "#facc15", 2*scale);
+  ctx.strokeStyle = "rgba(250,204,21,.75)";
+  ctx.lineWidth = 1.4*scale;
+  for (let i=0; i<4; i++) {
+    ctx.beginPath();
+    ctx.moveTo(x + dir*(14+i*8)*scale, y + (i*3)*scale);
+    ctx.lineTo(x + dir*(42+i*7)*scale, y + (-22+i*7)*scale);
+    ctx.stroke();
+  }
+}
+
+function drawDenzelMark(ctx, x, y, scale=1) {
+  ctx.save();
+  ctx.strokeStyle = "#facc15";
+  ctx.lineWidth = 4 * scale;
+  ctx.beginPath();
+  ctx.moveTo(x - 18*scale, y);
+  ctx.lineTo(x + 18*scale, y);
+  ctx.stroke();
+  rect(ctx, x - 3*scale, y - 10*scale, 6*scale, 18*scale, "#facc15");
+  rect(ctx, x - 10*scale, y - 4*scale, 20*scale, 5*scale, "#fde68a");
+  ctx.restore();
+}
+
+function drawHalo(ctx, x, y, rx=36, ry=12, color="rgba(250,204,21,.82)") {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.ellipse(x, y, rx, ry, -0.15, 0, Math.PI*2);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawBodyBase(ctx, cfg) {
+  const {
+    x=160, y=122, skin="#7c4a32", hair="#111827", body="#f8fafc",
+    accent="#facc15", pants="#111827", cloak=null,
+    eyes="#111827", mouth="#fef3c7", height=1,
+    bodyWidth=42, headWidth=34, armWidth=10,
+    direction="down"
+  } = cfg;
+
+  const s = height;
+  const bw = bodyWidth * s;
+  const hw = headWidth * s;
+
+  ellipse(ctx, x, y+100*s, 25*s, 7*s, "rgba(0,0,0,.34)");
+
+  if (cloak) {
+    poly(ctx, [
+      [x-(bw/2+12*s),y+45*s],[x+(bw/2+12*s),y+45*s],
+      [x+(bw/2+22*s),y+110*s],[x-(bw/2+22*s),y+110*s]
+    ], cloak);
+  }
+
+  // corpo
+  poly(ctx, [
+    [x-bw/2,y+28*s],[x+bw/2,y+28*s],
+    [x+(bw/2+4*s),y+82*s],[x+14*s,y+96*s],
+    [x-14*s,y+96*s],[x-(bw/2+4*s),y+82*s]
+  ], body);
+
+  rect(ctx, x-bw/2, y+28*s, bw, 7*s, accent);
+  rect(ctx, x-4*s, y+35*s, 8*s, 59*s, accent);
+
+  // pernas
+  rect(ctx, x-15*s, y+70*s, 10*s, 34*s, pants);
+  rect(ctx, x+5*s, y+70*s, 10*s, 34*s, pants);
+  rect(ctx, x-19*s, y+100*s, 17*s, 7*s, "#020617");
+  rect(ctx, x+2*s, y+100*s, 17*s, 7*s, "#020617");
+
+  // braços
+  if (direction === "left") {
+    rect(ctx, x-(bw/2+armWidth)*s, y+42*s, armWidth*s, 42*s, skin);
+    rect(ctx, x+(bw/2-3)*s, y+48*s, (armWidth-2)*s, 36*s, skin);
+  } else if (direction === "right") {
+    rect(ctx, x-(bw/2-3)*s, y+48*s, (armWidth-2)*s, 36*s, skin);
+    rect(ctx, x+(bw/2)*s, y+42*s, armWidth*s, 42*s, skin);
+  } else {
+    rect(ctx, x-(bw/2+armWidth)*s, y+42*s, armWidth*s, 42*s, skin);
+    rect(ctx, x+(bw/2)*s, y+42*s, armWidth*s, 42*s, skin);
+  }
+
+  // cabeça
+  rect(ctx, x-hw/2, y-20*s, hw, 36*s, skin);
+
+  if (direction === "up") {
+    rect(ctx, x-(hw/2+2*s), y-30*s, hw+4*s, 20*s, hair);
+    rect(ctx, x-(hw/2+2*s), y-12*s, hw+4*s, 10*s, hair);
+    rect(ctx, x-(hw/2+3*s), y-16*s, 7*s, 18*s, hair);
+    rect(ctx, x+(hw/2-4*s), y-16*s, 7*s, 18*s, hair);
+  } else if (direction === "left") {
+    rect(ctx, x-(hw/2+2*s), y-30*s, hw+4*s, 15*s, hair);
+    rect(ctx, x-(hw/2+4*s), y-14*s, 12*s, 24*s, hair);
+    rect(ctx, x-hw/2+2*s, y-2*s, 4*s, 5*s, eyes);
+    rect(ctx, x-hw/2+2*s, y+9*s, 8*s, 2*s, mouth);
+  } else if (direction === "right") {
+    rect(ctx, x-(hw/2+2*s), y-30*s, hw+4*s, 15*s, hair);
+    rect(ctx, x+(hw/2-8*s), y-14*s, 12*s, 24*s, hair);
+    rect(ctx, x+hw/2-7*s, y-2*s, 4*s, 5*s, eyes);
+    rect(ctx, x+hw/2-10*s, y+9*s, 8*s, 2*s, mouth);
+  } else {
+    rect(ctx, x-(hw/2+2*s), y-30*s, hw+4*s, 15*s, hair);
+    rect(ctx, x-(hw/2+3*s), y-16*s, 7*s, 18*s, hair);
+    rect(ctx, x+(hw/2-4*s), y-16*s, 7*s, 18*s, hair);
+    rect(ctx, x-8*s, y-3*s, 4*s, 5*s, eyes);
+    rect(ctx, x+5*s, y-3*s, 4*s, 5*s, eyes);
+    rect(ctx, x-5*s, y+9*s, 10*s, 2*s, mouth);
+  }
+}
+
+function drawDenzel(ctx, { wings=false, mark=false, halo=false, x=160, y=138, direction="down" } = {}) {
+  const baseY = y - 25;
+  const wingsInFront = direction === "up";
+
+  function drawDenzelWings(layer = "behind") {
+    if (!wings) return;
+
+    let leftX = x - 4;
+    let rightX = x + 4;
+    let wingY = baseY + 56;
+    let wingScale = 1.05;
+    let glowY = baseY + 40;
+    let glowR = 92;
+
+    if (direction === "left" || direction === "right") {
+      leftX = x - 2;
+      rightX = x + 2;
+      wingY = baseY + 55;
+      wingScale = 0.98;
+      glowY = baseY + 42;
+      glowR = 88;
+    }
+
+    if (direction === "up") {
+      // De costas, as asas ficam à frente do corpo e mais abertas.
+      leftX = x - 10;
+      rightX = x + 10;
+      wingY = baseY + 52;
+      wingScale = 0.92;
+      glowY = baseY + 36;
+      glowR = 84;
+    }
+
+    if (layer === "front") ctx.save();
+    drawWing(ctx, leftX, wingY, "left", wingScale);
+    drawWing(ctx, rightX, wingY, "right", wingScale);
+    glow(ctx, x, glowY, glowR, "rgba(250,204,21,.20)");
+    if (layer === "front") ctx.restore();
+  }
+
+  if (wings && !wingsInFront) drawDenzelWings("behind");
+  if (halo) drawHalo(ctx, x, baseY-32, 38, 12);
+
+  drawBodyBase(ctx, {
+    x, y: baseY,
+    skin:"#7c4a32",
+    hair:"#111827",
+    body:"#f8fafc",
+    accent:"#facc15",
+    pants:"#111827",
+    bodyWidth:40,
+    headWidth:32,
+    armWidth:9,
+    direction
+  });
+
+  if (wings && wingsInFront) drawDenzelWings("front");
+
+  if (direction !== "up") {
+    ctx.save();
+    ctx.strokeStyle = "#8b5e34";
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    if (direction === "left") {
+      ctx.moveTo(x-38,baseY+10);
+      ctx.lineTo(x-38,baseY+104);
+      ctx.stroke();
+      glow(ctx, x-38, baseY+4, 24, "rgba(250,204,21,.42)");
+      rect(ctx,x-46,baseY-6,16,12,"#facc15");
+      rect(ctx,x-42,baseY-2,8,5,"#fff7ed");
+    } else {
+      ctx.moveTo(x+45,baseY+10);
+      ctx.lineTo(x+45,baseY+104);
+      ctx.stroke();
+      glow(ctx, x+45, baseY+4, 24, "rgba(250,204,21,.42)");
+      rect(ctx,x+37,baseY-6,16,12,"#facc15");
+      rect(ctx,x+41,baseY-2,8,5,"#fff7ed");
+    }
+    ctx.restore();
+  }
+
+  if (mark) drawDenzelMark(ctx, x, baseY-45, 0.92);
+}
+
+function drawLurei(ctx, { form="normal", x=160, y=138, direction="down" } = {}) {
+  const baseY = y - 25;
+  const dominated = form === "dominado";
+  const warrior = form === "guerreiro" || form === "dominado";
+  const fallen = form === "caido";
+  const purified = form === "purificado";
+
+  if (fallen) {
+    glow(ctx, x, baseY+70, 82, "rgba(126,34,206,.25)");
+    ellipse(ctx, x, baseY+112, 46, 9, "rgba(0,0,0,.48)");
+    rect(ctx, x-42, baseY+84, 84, 19, "#050505");
+    rect(ctx, x-30, baseY+73, 33, 16, "#111827");
+    rect(ctx, x+6, baseY+74, 24, 14, "#3b0764");
+    rect(ctx, x-48, baseY+78, 24, 8, "#7c4a32");
+    rect(ctx, x+28, baseY+78, 24, 8, "#7c4a32");
+    rect(ctx, x-46, baseY+70, 21, 11, "#111827");
+    ctx.strokeStyle = "rgba(126,34,206,.75)";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(x,baseY+88,44,0,Math.PI*2);
+    ctx.stroke();
+    return;
+  }
+
+  if (warrior) {
+    glow(ctx, x, baseY+42, 100, dominated ? "rgba(239,68,68,.26)" : "rgba(126,34,206,.20)");
+
+    if (dominated) {
+      poly(ctx, [[x-15,baseY+45],[x-84,baseY+0],[x-62,baseY+67],[x-92,baseY+104],[x-30,baseY+92]], "#050505");
+      poly(ctx, [[x+15,baseY+45],[x+84,baseY+0],[x+62,baseY+67],[x+92,baseY+104],[x+30,baseY+92]], "#050505");
+      strokePoly(ctx, [[x-15,baseY+45],[x-84,baseY+0],[x-62,baseY+67],[x-92,baseY+104],[x-30,baseY+92]], "#7f1d1d", 3);
+      strokePoly(ctx, [[x+15,baseY+45],[x+84,baseY+0],[x+62,baseY+67],[x+92,baseY+104],[x+30,baseY+92]], "#7f1d1d", 3);
+    }
+
+    drawBodyBase(ctx, {
+      x,y: baseY,
+      skin:"#7c4a32",
+      hair:"#050505",
+      body: dominated ? "#050505" : "#0f172a",
+      accent: dominated ? "#991b1b" : "#6d28d9",
+      pants:"#050505",
+      cloak:"#020617",
+      eyes: dominated ? "#ef4444" : "#c084fc",
+      mouth: dominated ? "#ef4444" : "#e9d5ff",
+      bodyWidth:38,
+      headWidth:31,
+      armWidth:8,
+      direction
+    });
+
+    ctx.save();
+    ctx.strokeStyle = dominated ? "#7f1d1d" : "#1e1b4b";
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    if (direction === "left") {
+      ctx.moveTo(x-41,baseY+4);
+      ctx.lineTo(x+28,baseY+111);
+      ctx.stroke();
+      poly(ctx, [[x-43,baseY],[x-68,baseY-28],[x-59,baseY+18]], dominated ? "#ef4444" : "#7e22ce");
+    } else {
+      ctx.moveTo(x+43,baseY+4);
+      ctx.lineTo(x-38,baseY+111);
+      ctx.stroke();
+      poly(ctx, [[x+45,baseY],[x+70,baseY-28],[x+61,baseY+18]], dominated ? "#ef4444" : "#7e22ce");
+    }
+    ctx.restore();
+
+    if (dominated) {
+      poly(ctx, [[x-17,baseY-30],[x-40,baseY-52],[x-29,baseY-22]], "#050505");
+      poly(ctx, [[x+17,baseY-30],[x+40,baseY-52],[x+29,baseY-22]], "#050505");
+      glow(ctx, x, baseY-2, 46, "rgba(239,68,68,.22)");
+    }
+    return;
+  }
+
+  drawBodyBase(ctx, {
+    x,y: baseY,
+    skin:"#7c4a32",
+    hair:"#050505",
+    body: purified ? "#111827" : "#0b1120",
+    accent: purified ? "#facc15" : "#334155",
+    pants:"#050505",
+    cloak: purified ? "rgba(250,204,21,.18)" : "rgba(0,0,0,.24)",
+    eyes:"#111827",
+    bodyWidth:38,
+    headWidth:31,
+    armWidth:8,
+    direction
+  });
+
+  if (purified) drawHalo(ctx, x, baseY-30, 28, 8, "rgba(250,204,21,.55)");
+}
+
+function drawNilzin(ctx, { form="normal", x=160, y=138, direction="down" } = {}) {
+  const baseY = y - 25;
+  const shadow = form === "sombra" || form === "rainha";
+  const queen = form === "rainha";
+
+  if (shadow) {
+    glow(ctx, x, baseY+38, queen ? 132 : 96, queen ? "rgba(2,0,8,.46)" : "rgba(2,0,8,.36)");
+    glow(ctx, x, baseY+38, queen ? 96 : 70, queen ? "rgba(76,5,25,.28)" : "rgba(126,34,206,.24)");
+    ctx.save();
+    ctx.strokeStyle = queen ? "rgba(2,0,8,.72)" : "rgba(76,5,25,.55)";
+    ctx.lineWidth = queen ? 6 : 4;
+    ctx.beginPath();
+    ctx.ellipse(x, baseY+45, queen ? 76 : 56, queen ? 94 : 72, 0, 0, Math.PI*2);
+    ctx.stroke();
+    ctx.restore();
+
+    for (let i=0; i<(queen ? 5 : 3); i++) {
+      const angle = (i / (queen ? 5 : 3)) * Math.PI*2;
+      const sx = x + Math.cos(angle) * (queen ? 105 : 82);
+      const sy = baseY + 26 + Math.sin(angle) * 48;
+      drawShadowCreature(ctx, sx, sy, 0.65);
+    }
+  }
+
+  ellipse(ctx, x, baseY+105, 32, 7, "rgba(0,0,0,.42)");
+  const bodyColor = shadow ? "#050505" : "#111827";
+  const accent = shadow ? "#3b0764" : "#334155";
+
+  poly(ctx, [[x-22,baseY+28],[x+22,baseY+28],[x+34,baseY+108],[x-34,baseY+108]], bodyColor);
+  rect(ctx, x-20, baseY+28, 40, 8, accent);
+  rect(ctx, x-3, baseY+37, 6, 62, shadow ? "#7e22ce" : "#475569");
+
+  if (direction === "left") {
+    rect(ctx, x-30, baseY+43, 10, 42, "#f1d0b5");
+    rect(ctx, x+22, baseY+49, 8, 34, "#f1d0b5");
+  } else if (direction === "right") {
+    rect(ctx, x-30, baseY+49, 8, 34, "#f1d0b5");
+    rect(ctx, x+22, baseY+43, 10, 42, "#f1d0b5");
+  } else {
+    rect(ctx, x-32, baseY+43, 10, 42, "#f1d0b5");
+    rect(ctx, x+22, baseY+43, 10, 42, "#f1d0b5");
+  }
+
+  rect(ctx, x-16, baseY-19, 32, 36, "#f1d0b5");
+
+  if (direction === "up") {
+    rect(ctx, x-22, baseY-28, 44, 16, shadow ? "#0f172a" : "#111827");
+    rect(ctx, x-25, baseY-15, 10, 50, shadow ? "#111827" : "#1f2937");
+    rect(ctx, x+15, baseY-15, 10, 50, shadow ? "#111827" : "#1f2937");
+    rect(ctx, x-18, baseY-10, 36, 10, shadow ? "#111827" : "#1f2937");
+  } else if (direction === "left") {
+    rect(ctx, x-22, baseY-28, 44, 14, shadow ? "#0f172a" : "#111827");
+    rect(ctx, x-25, baseY-15, 12, 50, shadow ? "#111827" : "#1f2937");
+    rect(ctx, x-4, baseY-4, 4, 5, shadow ? "#a855f7" : "#111827");
+    rect(ctx, x-5, baseY+10, 10, 2, shadow ? "#581c87" : "#7f1d1d");
+  } else if (direction === "right") {
+    rect(ctx, x-22, baseY-28, 44, 14, shadow ? "#0f172a" : "#111827");
+    rect(ctx, x+13, baseY-15, 12, 50, shadow ? "#111827" : "#1f2937");
+    rect(ctx, x, baseY-4, 4, 5, shadow ? "#a855f7" : "#111827");
+    rect(ctx, x-5, baseY+10, 10, 2, shadow ? "#581c87" : "#7f1d1d");
+  } else {
+    rect(ctx, x-22, baseY-28, 44, 14, shadow ? "#0f172a" : "#111827");
+    rect(ctx, x-25, baseY-15, 10, 50, shadow ? "#111827" : "#1f2937");
+    rect(ctx, x+15, baseY-15, 10, 50, shadow ? "#111827" : "#1f2937");
+    const eye = shadow ? "#a855f7" : "#111827";
+    glow(ctx, x, baseY-1, shadow ? 32 : 12, shadow ? "rgba(168,85,247,.26)" : "rgba(0,0,0,0)");
+    rect(ctx, x-8, baseY-4, 4, 5, eye);
+    rect(ctx, x+5, baseY-4, 4, 5, eye);
+    rect(ctx, x-6, baseY+10, 12, 2, shadow ? "#581c87" : "#7f1d1d");
+  }
+
+  if (queen) {
+    poly(ctx, [[x-28,baseY+25],[x-52,baseY-4],[x-16,baseY+31]], "#020617");
+    poly(ctx, [[x+28,baseY+25],[x+52,baseY-4],[x+16,baseY+31]], "#020617");
+  }
+}
+
+function drawKraidus(ctx, { x=160, y=138, direction="down" } = {}) {
+  const baseY = y - 25;
+  glow(ctx, x, baseY+60, 130, "rgba(127,29,29,.34)");
+  ellipse(ctx, x, baseY+135, 62, 13, "rgba(0,0,0,.55)");
+
+  poly(ctx, [[x-30,baseY+60],[x-105,baseY+5],[x-84,baseY+78],[x-122,baseY+122],[x-42,baseY+105]], "#020617");
+  poly(ctx, [[x+30,baseY+60],[x+105,baseY+5],[x+84,baseY+78],[x+122,baseY+122],[x+42,baseY+105]], "#020617");
+  strokePoly(ctx, [[x-30,baseY+60],[x-105,baseY+5],[x-84,baseY+78],[x-122,baseY+122],[x-42,baseY+105]], "#7f1d1d", 4);
+  strokePoly(ctx, [[x+30,baseY+60],[x+105,baseY+5],[x+84,baseY+78],[x+122,baseY+122],[x+42,baseY+105]], "#7f1d1d", 4);
+
+  poly(ctx, [[x-32,baseY+22],[x+32,baseY+22],[x+46,baseY+104],[x+22,baseY+142],[x-22,baseY+142],[x-46,baseY+104]], "#111827");
+  rect(ctx, x-29, baseY+28, 58, 12, "#7f1d1d");
+  rect(ctx, x-6, baseY+38, 12, 88, "#991b1b");
+  rect(ctx, x-50, baseY+50, 15, 58, "#111827");
+  rect(ctx, x+35, baseY+50, 15, 58, "#111827");
+
+  rect(ctx, x-24, baseY-20, 48, 42, "#1f2937");
+
+  if (direction === "up") {
+    rect(ctx, x-28, baseY-31, 56, 20, "#020617");
+  } else if (direction === "left") {
+    rect(ctx, x-28, baseY-31, 56, 16, "#020617");
+    rect(ctx, x-12, baseY-2, 6, 6, "#ef4444");
+    rect(ctx, x-12, baseY+12, 18, 4, "#ef4444");
+  } else if (direction === "right") {
+    rect(ctx, x-28, baseY-31, 56, 16, "#020617");
+    rect(ctx, x+6, baseY-2, 6, 6, "#ef4444");
+    rect(ctx, x-6, baseY+12, 18, 4, "#ef4444");
+  } else {
+    rect(ctx, x-28, baseY-31, 56, 16, "#020617");
+    rect(ctx, x-12, baseY-3, 7, 6, "#ef4444");
+    rect(ctx, x+5, baseY-3, 7, 6, "#ef4444");
+    rect(ctx, x-13, baseY+12, 26, 4, "#ef4444");
+  }
+
+  poly(ctx, [[x-22,baseY-28],[x-70,baseY-55],[x-44,baseY-14]], "#020617");
+  poly(ctx, [[x+22,baseY-28],[x+70,baseY-55],[x+44,baseY-14]], "#020617");
+  strokePoly(ctx, [[x-22,baseY-28],[x-70,baseY-55],[x-44,baseY-14]], "#7f1d1d", 3);
+  strokePoly(ctx, [[x+22,baseY-28],[x+70,baseY-55],[x+44,baseY-14]], "#7f1d1d", 3);
+  glow(ctx, x, baseY+2, 58, "rgba(239,68,68,.28)");
+}
+
+function drawShadowCreature(ctx, x, y, scale=1) {
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.scale(scale,scale);
+  glow(ctx, 0, 0, 36, "rgba(15,23,42,.35)");
+  poly(ctx, [[-24,-12],[8,-22],[28,-4],[12,19],[-18,16]], "#020617");
+  rect(ctx, -10, -4, 6, 5, "#c4b5fd");
+  rect(ctx, 7, -3, 6, 5, "#c4b5fd");
+  poly(ctx, [[22,-2],[42,-14],[34,5]], "#020617");
+  poly(ctx, [[-20,10],[-48,25],[-14,23]], "#020617");
+  ctx.restore();
+}
+
+function drawDivan(ctx, { x=160, y=138, direction="down" } = {}) {
+  const baseY = y - 25;
+  drawBodyBase(ctx, {
+    x,y: baseY,
+    skin:"#7c4a32",
+    hair:"#050505",
+    body:"#1e3a8a",
+    accent:"#93c5fd",
+    pants:"#111827",
+    bodyWidth:38,
+    headWidth:31,
+    armWidth:8,
+    direction
+  });
+  rect(ctx, x-10, baseY-47, 20, 4, "#facc15");
+  rect(ctx, x-2, baseY-54, 4, 12, "#facc15");
+}
+
+function drawSage(ctx, { x=160, y=138, direction="down" } = {}) {
+  const baseY = y - 25;
+  glow(ctx, x, baseY+30, 80, "rgba(250,204,21,.12)");
+  drawBodyBase(ctx, {
+    x,y: baseY,
+    skin:"#f8fafc",
+    hair:"#e5e7eb",
+    body:"#f8fafc",
+    accent:"#facc15",
+    pants:"#475569",
+    cloak:"rgba(250,204,21,.14)",
+    eyes:"#111827",
+    bodyWidth:38,
+    headWidth:31,
+    armWidth:8,
+    direction
+  });
+
+  if (direction !== "up") {
+    ctx.save();
+    ctx.strokeStyle = "#8b5e34";
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    if (direction === "left") {
+      ctx.moveTo(x-40,baseY+2);
+      ctx.lineTo(x-40,baseY+111);
+      ctx.stroke();
+      rect(ctx,x-48,baseY-9,16,12,"#facc15");
+    } else {
+      ctx.moveTo(x+46,baseY+2);
+      ctx.lineTo(x+46,baseY+111);
+      ctx.stroke();
+      rect(ctx,x+38,baseY-9,16,12,"#facc15");
+    }
+    ctx.restore();
+  }
+}
+
+setup();
+</script>
+</body>
+</html>

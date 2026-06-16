@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>O Filho do Dono — Mobile Demo</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="mobile-demo">
+  <div class="rotate-warning"><strong>Vira o telemóvel</strong><span>Versão horizontal. Controlos nas laterais e toque no jogo para avançar falas ou ativar o grito.</span></div>
+
+  <section id="titleMenu" class="title-menu" aria-label="Menu inicial do jogo">
+    <div class="title-menu-bg">
+      <div class="title-light-orb"></div>
+      <div class="title-wing title-wing-left"></div>
+      <div class="title-wing title-wing-right"></div>
+      <div class="title-particles" aria-hidden="true">
+        <span></span><span></span><span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+
+    <div class="title-menu-panel">
+      <p class="title-kicker">RPG narrativo</p>
+      <h1>O Filho do Dono</h1>
+      <p class="title-subtitle">A luz não pertence às trevas</p>
+
+      <div class="title-reference" id="titleBibleReference">
+        <strong>A luz resplandece nas trevas.</strong>
+        <span>João 1:5</span>
+      </div>
+
+      <div class="title-actions">
+        <button id="menuStartBtn" type="button" class="title-btn primary">Iniciar</button>
+        <button id="menuContinueBtn" type="button" class="title-btn">Continuar</button>
+        <button id="menuNewGameBtn" type="button" class="title-btn danger">Novo jogo</button>
+        <button id="menuCreditsBtn" type="button" class="title-btn">Créditos</button>
+      </div>
+
+      <div class="title-options">
+        <button id="menuMusicBtn" type="button" class="title-chip">Música: Ligada</button>
+        <button id="menuSfxBtn" type="button" class="title-chip">Som: Ligado</button>
+        <label class="title-volume">
+          Volume
+          <input id="menuVolumeRange" type="range" min="0" max="100" value="55" />
+        </label>
+      </div>
+
+      <p class="title-audio-note">O som começa depois de clicar em Iniciar/Continuar.</p>
+    </div>
+
+    <div id="menuCreditsPanel" class="title-credits hidden">
+      <div class="title-credits-card">
+        <h2>Créditos</h2>
+        <p><strong>História, direção e criação:</strong> Emanuel Soares</p>
+        <p><strong>Jogo:</strong> mapas, batalhas, cutscenes, personagens e sistema narrativo de <em>O Filho do Dono</em>.</p>
+        <p><strong>Mensagem:</strong> Deus Connosco. A luz venceu as sombras.</p>
+        <button id="menuCreditsCloseBtn" type="button" class="title-btn primary">Voltar</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="mobile-note">
+    <strong>Mobile demo offline:</strong> usa os botões no ecrã. O progresso fica guardado neste telemóvel/navegador.
+  </div>
+
+  <main class="layout">
+    <section class="game-card">
+      <div class="stage">
+        <canvas id="gameCanvas" width="640" height="480"></canvas>
+
+        <div id="dialog" class="dialog hidden">
+          <div class="dialog-left">
+            <img id="dialogPortrait" alt="" class="dialog-portrait hidden">
+          </div>
+          <div class="dialog-content">
+            <div id="dialogName" class="dialog-name"></div>
+            <div id="dialogText" class="dialog-text"></div>
+            <div class="dialog-hint">Toca no jogo para avançar</div>
+          </div>
+        </div>
+
+        <div id="cutscene" class="cutscene hidden">
+          <div class="cutscene-panel">
+            <img id="cutsceneImage" alt="Imagem da cena" class="cutscene-image">
+            <div class="cutscene-text-wrap">
+              <h2 id="cutsceneTitle"></h2>
+              <p id="cutsceneText"></p>
+              <button id="cutsceneButton" type="button">Continuar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <section class="quest-box">
+        <p class="eyebrow">Missão atual</p>
+        <h2 id="questTitle">A carregar...</h2>
+        <p id="questObjective">A demo está a carregar em modo offline.</p>
+        <div id="questDetails" class="quest-details"></div>
+      </section>
+
+      <section class="stats-box">
+        <div class="stats-header">
+          <p class="eyebrow">Denzel</p>
+          <strong id="levelText">Nível 1</strong>
+        </div>
+        <div class="stat-row">
+          <span id="hpText">HP 35/35</span>
+          <div class="bar"><div id="hpFill" class="bar-fill hp-fill"></div></div>
+        </div>
+        <div class="stat-row">
+          <span id="xpText">XP 0/50</span>
+          <div class="bar"><div id="xpFill" class="bar-fill xp-fill"></div></div>
+        </div>
+        <p id="atkDefText" class="small stats-small">ATK 5 · DEF 2</p>
+      </section>
+
+      <section class="inventory-box">
+        <div class="stats-header">
+          <p class="eyebrow">Inventário</p>
+          <strong id="goldText">0 ouro</strong>
+        </div>
+        <p id="potionText" class="small stats-small">Poções: 2</p>
+        <p class="small">No mobile: <strong>3</strong> recupera HP fora da batalha (gasta EN) e <strong>4</strong> usa poção fora da batalha.</p>
+      </section>
+
+      <section class="info-box controls-desktop">
+        <h3>Controlos</h3>
+        <p><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> ou setas para mover</p>
+        <p><kbd>E</kbd> interagir · <kbd>Espaço</kbd> avançar</p>
+        <p><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd> ações em combate</p>
+      </section>
+    </aside>
+  </main>
+
+  <div id="mobileControls" class="mobile-controls" aria-label="Controlos no telemóvel">
+    <div class="dpad">
+      <button class="mobile-btn up" data-hold-key="ArrowUp">▲</button>
+      <button class="mobile-btn left" data-hold-key="ArrowLeft">◀</button>
+      <button class="mobile-btn center" type="button">•</button>
+      <button class="mobile-btn right" data-hold-key="ArrowRight">▶</button>
+      <button class="mobile-btn down" data-hold-key="ArrowDown">▼</button>
+    </div>
+    <div class="mobile-actions">
+      <button class="mobile-btn primary" data-main-action="1">A / Interagir</button>
+      <button class="mobile-btn" data-tap-key=" ">Avançar</button>
+      <button class="mobile-btn small" data-tap-key="1">1 Atacar</button>
+      <button class="mobile-btn small" data-tap-key="2">2 Cajado</button>
+      <button class="mobile-btn small" data-tap-key="3">3 Recuperar</button>
+      <button class="mobile-btn small" data-tap-key="4">4 Poção</button>
+    </div>
+  </div>
+
+  <button id="kraidusResetBtn" class="kraidus-reset-btn" type="button" hidden>
+    K — Voltar à luta contra Kraidus
+  </button>
+
+
+  <script src="js/config/denzel-visual-config.js"></script>
+  <script src="js/config/characters-config.js"></script>
+  <script src="js/config/world-config.js"></script>
+  <script src="js/config/bible-references-config.js"></script>
+  <script src="js/config/audio-config.js"></script>
+  <script src="js/audio-engine.js"></script>
+
+  <!-- Personagens modulares -->
+  <script src="js/config/characters/lurei-normal.js"></script>
+  <script src="js/config/characters/lurei-guerreiro.js"></script>
+  <script src="js/config/characters/lurei-dominio.js"></script>
+
+  <!-- Cenas modulares -->
+  <script src="js/config/scenes/kraidus-transformation-scene.js"></script>
+  <script src="js/config/scenes/nilzin-transformation-scene.js"></script>
+  <script src="js/config/scenes/lurei-shadow-entrance-scene.js"></script>
+  <script src="js/config/scenes/nilzin-abduction-scene.js"></script>
+  <script src="js/config/scenes/lurei-reveal-scene.js"></script>
+  <script src="js/config/scenes/lurei-purification-scene.js"></script>
+
+  <script src="js/data.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/visuals/character-design-v20.js"></script>
+  <script src="js/fullscreen.js"></script>
+  <script src="js/title-menu.js"></script>
+</body>
+</html>
