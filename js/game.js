@@ -51,6 +51,7 @@ let floatingMessages = [];
 let questToast = null;
 let saveToast = null;
 let lastSaveToastFrame = -999;
+let lastMapSwitchFrame = -999;
 let battle = null;
 let battleMessage = '';
 let battleLog = [];
@@ -166,13 +167,23 @@ function isEnemyTemporarilyDefeated(object) {
   return true;
 }
 
+
+function isPostGameActive() {
+  return currentQuest?.key === 'denzel2_final'
+    || Boolean(flags.d2_nilzin_final_defeated)
+    || Boolean(flags.quest_d2_nilzin_final_done)
+    || Boolean(flags.quest_denzel2_final_done);
+}
+
 function enemyAllowedForCurrentQuest(object) {
   if (Array.isArray(object?.allowQuestKeys) && object.allowQuestKeys.includes(currentQuest?.key)) return true;
   const requiredQuest = object.questKey || (object.type === 'light_target' ? 'staff_precision_trial' : 'forest_hunt');
   if (currentQuest?.key === requiredQuest) return true;
   if (requiredQuest === 'mirlon_prepare' && currentQuest?.key === 'public_battle_mirlon') return true;
   if (requiredQuest === 'elranor_farm' && ['outer_elranor_watch', 'elranor_gate_warning', 'break_elranor_seal'].includes(currentQuest?.key)) return true;
-  if (requiredQuest === 'denzel2_free_roam' && ['denzel2_free_roam', 'denzel2_lurei_walk', 'denzel2_nilzin_hint', 'd2_council_shadow', 'd2_years_later_return'].includes(currentQuest?.key)) return true;
+  if (requiredQuest === 'denzel2_free_roam' && ['denzel2_free_roam', 'denzel2_lurei_walk', 'denzel2_nilzin_hint', 'd2_council_shadow', 'd2_years_later_return', 'denzel2_final'].includes(currentQuest?.key)) return true;
+  // Pós-jogo: as zonas de treino ficam abertas para upar sem avançar a história.
+  if (isPostGameActive() && (object?.noQuestProgress || object?.allowPostGame)) return true;
   return false;
 }
 
@@ -469,6 +480,7 @@ function goToNilzinPreFight(confirmAction = false) {
   if (!target || !quest) return false;
 
   currentMap = target;
+  lastMapSwitchFrame = frame;
   currentQuest = quest;
   flags.has_staff = true;
   flags.d2CeremonyDemonsDefeated = 3;
@@ -596,6 +608,116 @@ function apiPost(url, payload = {}) {
   return Promise.resolve({ ok: true });
 }
 
+function repairProgressAfterContentUpdates() {
+  const questKey = DATA.save.currentQuestKey;
+  const mapKey = DATA.save.currentMapKey;
+  const defeated = DATA.save.flags?.denzel2FreeRoamDefeated || 0;
+  const fiveYearsOrder = DATA.quests?.denzel2_peace_intro?.order || 999;
+  const savedQuestOrder = DATA.quests?.[questKey]?.order || 0;
+
+  // Hotfix v32.3: se o jogador já matou as 3 sombras dos 5 anos, garante que a missão passa para o passeio com Lurei.
+  if (questKey === 'denzel2_free_roam' && defeated >= DENZEL2_FREE_ROAM_REQUIRED_SHADOWS) {
+    DATA.save.currentQuestKey = 'denzel2_lurei_walk';
+    DATA.save.currentMapKey = 'elranor_peace';
+    DATA.save.playerX = DATA.maps.elranor_peace?.startX ?? 12;
+    DATA.save.playerY = DATA.maps.elranor_peace?.startY ?? 13;
+  }
+
+  // Hotfix v32.3: evita saves inconsistentes onde o jogador está em Elranor adulta,
+  // mas a missão/falas ainda pertencem ao Lurei criança de Aldara.
+  if (mapKey === 'elranor_peace' && savedQuestOrder < fiveYearsOrder) {
+    DATA.save.currentQuestKey = defeated >= DENZEL2_FREE_ROAM_REQUIRED_SHADOWS ? 'denzel2_lurei_walk' : 'denzel2_free_roam';
+    DATA.save.playerX = DATA.maps.elranor_peace?.startX ?? 12;
+    DATA.save.playerY = DATA.maps.elranor_peace?.startY ?? 13;
+  }
+
+  // Hotfix v32.5: se o jogador fechou/atualizou o jogo logo depois de vencer um boss,
+  // o save podia ficar com a flag do boss derrotado mas ainda na missão antiga.
+  // Isso escondia o boss/marcador e deixava o mapa sem nada para fazer.
+  if (DATA.save.currentQuestKey === 'd2_first_lurei_battle' && DATA.save.flags?.d2_shadow_warrior_defeated) {
+    DATA.save.currentQuestKey = 'd2_lurei_reveal';
+    DATA.save.currentMapKey = 'd2_ruined_village';
+    DATA.save.playerX = 10;
+    DATA.save.playerY = 7;
+    DATA.save.flags.auto_d2_lurei_reveal_lurei_reveal_marker = false;
+  }
+
+  if (DATA.save.currentQuestKey === 'd2_lurei_phase_two' && DATA.save.flags?.d2_lurei_weakened) {
+    DATA.save.currentQuestKey = 'd2_purification';
+    DATA.save.currentMapKey = 'd2_ruined_village';
+    DATA.save.playerX = 10;
+    DATA.save.playerY = 7;
+    DATA.save.flags.auto_d2_purification_purification_marker = false;
+  }
+
+  if (DATA.save.currentQuestKey === 'd2_purification' && DATA.save.flags?.lurei_purified) {
+    DATA.save.currentQuestKey = 'd2_nilzin_final';
+    DATA.save.currentMapKey = 'd2_ruined_village';
+    DATA.save.playerX = 10;
+    DATA.save.playerY = 9;
+  }
+
+  if (DATA.save.currentQuestKey === 'd2_nilzin_final' && DATA.save.flags?.d2_nilzin_final_defeated) {
+    DATA.save.currentQuestKey = 'denzel2_final';
+    DATA.save.currentMapKey = 'eldoria_final';
+    DATA.save.playerX = DATA.maps.eldoria_final?.startX ?? 10;
+    DATA.save.playerY = DATA.maps.eldoria_final?.startY ?? 12;
+  }
+
+  // Também reativa marcadores automáticos caso o save tenha ficado preso a meio da transição.
+  if (DATA.save.currentQuestKey === 'd2_lurei_reveal' && !DATA.save.flags?.quest_d2_lurei_reveal_done) {
+    DATA.save.currentMapKey = 'd2_ruined_village';
+    DATA.save.playerX = 10;
+    DATA.save.playerY = 7;
+    DATA.save.flags.auto_d2_lurei_reveal_lurei_reveal_marker = false;
+  }
+
+  if (DATA.save.currentQuestKey === 'd2_purification' && !DATA.save.flags?.quest_d2_purification_done) {
+    DATA.save.currentMapKey = 'd2_ruined_village';
+    DATA.save.playerX = 10;
+    DATA.save.playerY = 7;
+    DATA.save.flags.auto_d2_purification_purification_marker = false;
+  }
+
+  // Hotfix v32.7: saves criados antes do mundo aberto podiam ficar em cima de uma saída
+  // ou ao lado dela. Isso criava efeito ping-pong ou deixava o jogador preso em mapas antigos.
+  const postGameSave = DATA.save.currentQuestKey === 'denzel2_final'
+    || Boolean(DATA.save.flags?.d2_nilzin_final_defeated)
+    || Boolean(DATA.save.flags?.quest_d2_nilzin_final_done)
+    || Boolean(DATA.save.flags?.quest_denzel2_final_done);
+  if (postGameSave) {
+    const safePostGamePositions = {
+      eldoria_final: [12, 10],
+      aldara: [13, 8],
+      mirlon: [10, 10],
+      zaridon_ruins: [10, 11],
+      d2_ruined_village: [15, 12],
+      d2_light_training_ground: [19, 7],
+      d2_golden_fields: [4, 7],
+      mirlon_training_field: [10, 12],
+      kraidus_training_hall: [10, 12],
+      eldoria_training_outskirts: [10, 12],
+      ruined_village_training: [10, 12],
+    };
+    const safe = safePostGamePositions[DATA.save.currentMapKey];
+    const oldBadPositions = new Set([
+      'eldoria_final:3:7', 'eldoria_final:4:13', 'eldoria_final:12:2', 'eldoria_final:20:12', 'eldoria_final:21:7', 'eldoria_final:12:13',
+      'aldara:18:7', 'aldara:17:7', 'mirlon:10:12', 'mirlon:10:13', 'zaridon_ruins:10:12', 'zaridon_ruins:10:13',
+      'd2_ruined_village:10:11', 'd2_ruined_village:18:12', 'd2_light_training_ground:21:7', 'd2_light_training_ground:22:7',
+      'd2_golden_fields:2:7', 'd2_golden_fields:1:7'
+    ]);
+    const posKey = `${DATA.save.currentMapKey}:${DATA.save.playerX}:${DATA.save.playerY}`;
+    if (safe && oldBadPositions.has(posKey)) {
+      DATA.save.playerX = safe[0];
+      DATA.save.playerY = safe[1];
+    }
+    if (DATA.save.flags?.d2_nilzin_final_defeated) {
+      DATA.save.currentQuestKey = 'denzel2_final';
+    }
+  }
+
+}
+
 async function loadGame() {
   if (!window.OFDD_BOOTSTRAP_DATA) {
     throw new Error('Dados offline em falta. Abre o ficheiro index.html completo da versão mobile.');
@@ -612,6 +734,8 @@ async function loadGame() {
       flags: { ...(DATA.save.flags || {}), ...(localSave.flags || {}) },
     };
   }
+  repairProgressAfterContentUpdates();
+
   if (gameTitle) gameTitle.textContent = DATA.game.title;
   if (gameSubtitle) gameSubtitle.textContent = DATA.game.subtitle;
 
@@ -1173,12 +1297,12 @@ document.addEventListener('keydown', (event) => {
     player.direction = input.dir;
   }
 
-  if (event.key === ' ' && isDialogOpen()) {
+  if ([' ', 'e', 'E'].includes(event.key) && isDialogOpen()) {
     event.preventDefault();
     showNextDialogLine();
   }
 
-  if (event.key === ' ' && isCutsceneOpen()) {
+  if ([' ', 'e', 'E'].includes(event.key) && isCutsceneOpen()) {
     event.preventDefault();
     showNextCutscene();
   }
@@ -1387,12 +1511,21 @@ function isMapObjectVisible(object) {
     lurei_abduction_marker: 'quest_d2_lurei_abducted_done',
     ruined_village_intro: 'quest_d2_ruined_village_done',
     lurei_shadow_first: 'd2_shadow_warrior_defeated',
-    lurei_reveal_marker: 'lurei_identity_revealed',
-    lurei_shadow_second: 'd2_lurei_weakened',
-    purification_marker: 'lurei_purified',
+    // Hotfix v32.5: estes marcadores só devem desaparecer quando a missão técnica fica concluída.
+    // Antes estavam ligados a flags narrativas e podiam esconder o próximo passo da história.
+    lurei_reveal_marker: 'quest_d2_lurei_reveal_done',
+    lurei_shadow_second: 'quest_d2_lurei_phase_two_done',
+    purification_marker: 'quest_d2_purification_done',
     nilzin_final_boss: 'd2_nilzin_final_defeated',
   };
   if (hiddenByFlag[object.key] && flags[hiddenByFlag[object.key]]) return false;
+
+  if (object.postGameOnly && !isPostGameActive()) return false;
+  if (object.questKey === 'denzel2_final' && isPostGameActive()) {
+    // Objetos de pós-jogo continuam visíveis mesmo que um save antigo tenha ficado com a flag final,
+    // mas ainda não tenha sincronizado o nome interno da missão.
+    return true;
+  }
 
   if (object.type === 'training_shadow') {
     return currentQuest?.key === 'first_combat' && !flags.training_shadow_defeated;
@@ -1511,10 +1644,15 @@ function interact() {
 }
 
 function getDialogueForNpc(npc) {
-  const lines = DATA.dialogues[npc.characterKey]?.[currentQuest.key];
+  // Proteção para saves antigos: depois do salto de 5 anos, o Lurei já é adulto.
+  // Se algum save/mapa antigo ainda apontar para a chave infantil "lurei", usamos as falas do Lurei Cavaleiro.
+  const isAfterFiveYears = (currentQuest?.order || 0) >= (DATA.quests?.denzel2_peace_intro?.order || 999);
+  const dialogueKey = (isAfterFiveYears && npc.characterKey === 'lurei') ? 'lurei_cavaleiro' : npc.characterKey;
+
+  const lines = DATA.dialogues[dialogueKey]?.[currentQuest.key];
   if (lines?.length) return lines;
 
-  return getContextualFallbackDialogue(npc);
+  return getContextualFallbackDialogue({ ...npc, characterKey: dialogueKey });
 }
 
 function getContextualFallbackDialogue(npc) {
@@ -2142,6 +2280,7 @@ function faceObject(object) {
 
 function objectInteractionRange(object) {
   if (!object) return 1;
+  if (object.key === 'final_creditos_marker' || object.key === 'guia_mundo_aberto_final') return 5;
   if (object.type === 'training_crystal') return 999;
   if (['training_shadow', 'forest_enemy', 'healer_shop', 'north_gate', 'vision_stone', 'light_target', 'prayer_altar', 'return_aldara_gate', 'nilzin_survivor', 'nilzin_heal', 'mirlon_gate', 'story_marker', 'lurei_clue', 'mirlon_boss_gate', 'mirlon_minor_demon', 'map_exit'].includes(object.type)) return 2;
   return 1;
@@ -2186,7 +2325,7 @@ function drawFloatingMessages() {
 
 
 function handleHealerShop(object) {
-  if (!['forest_hunt', 'prepare_journey', 'enter_shadow_valley', 'physical_training', 'figure_in_black', 'return_to_sage', 'demo_done', 'staff_mastery_intro', 'staff_precision_trial', 'vision_of_ruin', 'staff_mastery_done', 'spiritual_training_intro', 'prayer_trial', 'declared_son_owner', 'return_aldara_trained', 'denzel2_free_roam', 'denzel2_lurei_walk', 'd2_shadow_army'].includes(currentQuest.key)) {
+  if (!['forest_hunt', 'prepare_journey', 'enter_shadow_valley', 'physical_training', 'figure_in_black', 'return_to_sage', 'demo_done', 'staff_mastery_intro', 'staff_precision_trial', 'vision_of_ruin', 'staff_mastery_done', 'spiritual_training_intro', 'prayer_trial', 'declared_son_owner', 'return_aldara_trained', 'denzel2_free_roam', 'denzel2_lurei_walk', 'd2_shadow_army', 'denzel2_final'].includes(currentQuest.key)) {
     openDialog({ name: object.name || 'Lia', portrait: '' }, [
       { text: 'A guardiã observa-te em silêncio. Ainda não é altura de usar a loja.' },
     ]);
@@ -4035,9 +4174,9 @@ function markEnemyDefeated(enemy) {
 }
 
 function addQuestProgressLines(enemy, lines) {
-  if (enemy.noQuestProgress) {
+  if (enemy.noQuestProgress && enemy.questKey !== 'denzel2_free_roam') {
     lines.push({ text: 'Treino concluído. Ganhaste XP, mas a história principal não avançou.' });
-    lines.push({ text: 'Continua a farmar ou volta pela saída BOSS quando estiveres preparado.' });
+    lines.push({ text: isPostGameActive() ? 'Continua a upar ou usa a saída dourada para voltar a Eldoria.' : 'Continua a farmar ou volta pela saída BOSS quando estiveres preparado.' });
     return;
   }
 
@@ -4277,6 +4416,9 @@ function handleTileEvents() {
 function handleAutoMapExit() {
   if (!currentMap || !currentQuest || player.moving || battle?.active || shop?.active || quickEvent?.active || shadowEntranceEvent?.active || nilzinAbductionEvent?.active || powerEvent?.active || kraidusEvent?.active || lureiEvent?.active) return false;
 
+  // Evita efeito ping-pong: ao entrar numa cidade pelo portal, não volta logo para trás.
+  if (frame - lastMapSwitchFrame < 18) return false;
+
   const exits = (currentMap.mapData.objects || [])
     .filter(obj => obj.type === 'map_exit' && isMapObjectVisible(obj) && obj.targetMap && DATA.maps[obj.targetMap]);
 
@@ -4370,7 +4512,7 @@ function handleAutoStoryMarkers() {
       object: obj,
       distance: Math.abs(player.gridX - obj.x) + Math.abs(player.gridY - obj.y),
     }))
-    .filter(item => item.distance <= (['d2_lurei_reveal','d2_purification','d2_nilzin_final','d2_lurei_abducted'].includes(currentQuest.key) ? 2 : 1))
+    .filter(item => item.distance <= (currentQuest.key === 'denzel2_final' ? 5 : (['d2_lurei_reveal','d2_purification','d2_nilzin_final','d2_lurei_abducted'].includes(currentQuest.key) ? 2 : 1)))
     .sort((a, b) => a.distance - b.distance)[0]?.object;
 
   if (!object) return false;
@@ -5601,6 +5743,16 @@ function drawLightPillar(object) {
   ctx.lineTo(x + 16, y + 36);
   ctx.stroke();
   ellipse(x + 16, y + 18, 23, 9, 'rgba(250,204,21,0.22)');
+  if (object.label || object.key === 'final_creditos_marker' || object.key === 'guia_mundo_aberto_final') {
+    const label = object.label || (object.key === 'final_creditos_marker' ? 'CRÉDITOS' : 'MUNDO');
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.82)';
+    ctx.fillRect(x - 18, y - 28, 68, 15);
+    ctx.fillStyle = '#fef3c7';
+    ctx.font = '900 8px system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText(label.substring(0, 10), x + 16, y - 17);
+    ctx.textAlign = 'start';
+  }
   ctx.restore();
 }
 
@@ -6537,7 +6689,7 @@ function drawWorldHint() {
       ctx.font = '800 10px system-ui';
       ctx.fillText('Ou derrota 3 sombras nos mapas laterais.', 380, 49);
       ctx.fillText('Esquerda/direita mudam de mapa automaticamente.', 380, 64);
-      ctx.fillText('B para ver atalhos de bosses.', 380, 78);
+      if (OFDD_DEV_MODE) ctx.fillText('B para ver atalhos de bosses.', 380, 78);
     } else if (currentMap.key === 'd2_light_training_ground') {
       const defeated = flags.denzel2FreeRoamDefeated || 0;
       ctx.fillText(`Campo dos Cavaleiros: ${defeated}/3 sombras`, 380, 32);

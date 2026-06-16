@@ -674,6 +674,33 @@ window.OFDD_BOOTSTRAP_DATA = {
             "y": 1,
             "solid": true,
             "text": ""
+          },
+          {
+            "key": "voltar_eldoria_pos_final",
+            "type": "map_exit",
+            "questKey": "denzel2_final",
+            "targetMap": "eldoria_final",
+            "startX": 12,
+            "startY": 10,
+            "label": "ELDORIA",
+            "name": "Voltar a Eldoria",
+            "x": 16,
+            "y": 7,
+            "solid": false,
+            "text": "Volta para Eldoria e continua a explorar Elranor no pós-jogo.",
+            "postGameOnly": true
+          },
+          {
+            "key": "memoria_aldara_pos_final",
+            "type": "story_marker",
+            "questKey": "denzel2_final",
+            "name": "Memória de Aldara",
+            "x": 9,
+            "y": 8,
+            "solid": false,
+            "noAdvance": true,
+            "text": "Denzel volta ao lugar onde tudo começou.",
+            "nextText": "A dor ainda existe, mas já não manda nele. A luz transformou perda em propósito."
           }
         ]
       },
@@ -1753,6 +1780,33 @@ window.OFDD_BOOTSTRAP_DATA = {
             "type": "map_exit",
             "solid": false,
             "text": "Pisa a seta dourada para ir treinar antes do boss."
+          },
+          {
+            "key": "voltar_eldoria_pos_final",
+            "type": "map_exit",
+            "questKey": "denzel2_final",
+            "targetMap": "eldoria_final",
+            "startX": 12,
+            "startY": 10,
+            "label": "ELDORIA",
+            "name": "Voltar a Eldoria",
+            "x": 10,
+            "y": 13,
+            "solid": false,
+            "text": "Volta a Eldoria.",
+            "postGameOnly": true
+          },
+          {
+            "key": "memoria_mirlon_pos_final",
+            "type": "story_marker",
+            "questKey": "denzel2_final",
+            "name": "Memória de Mirlon",
+            "x": 11,
+            "y": 7,
+            "solid": false,
+            "noAdvance": true,
+            "text": "Mirlon já não grita por socorro.",
+            "nextText": "Agora esta aldeia guarda a lembrança do dia em que a esperança voltou a avançar pelas estradas."
           }
         ]
       },
@@ -3079,6 +3133,21 @@ window.OFDD_BOOTSTRAP_DATA = {
         "houses": [],
         "objects": [
           {
+            "key": "voltar_eldoria_treino_pos_final",
+            "type": "map_exit",
+            "questKey": "denzel2_final",
+            "targetMap": "eldoria_final",
+            "startX": 12,
+            "startY": 10,
+            "label": "ELDORIA",
+            "name": "Voltar a Eldoria",
+            "x": 22,
+            "y": 7,
+            "solid": false,
+            "text": "Volta a Eldoria.",
+            "postGameOnly": true
+          },
+          {
             "key": "voltar_elranor_treino",
             "type": "map_exit",
             "targetMap": "elranor_peace",
@@ -3162,14 +3231,18 @@ window.OFDD_BOOTSTRAP_DATA = {
               "defense": 9,
               "xp": 260
             },
-            "respawnSeconds": 15,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "drop": {
               "goldMin": 28,
               "goldMax": 45,
               "potionChance": 45,
               "lightShardChance": 75
-            }
+            },
+            "allowPostGame": true,
+            "allowQuestKeys": [
+              "denzel2_final"
+            ]
           },
           {
             "key": "treino_luz_imp_1",
@@ -3187,14 +3260,18 @@ window.OFDD_BOOTSTRAP_DATA = {
               "defense": 10,
               "xp": 310
             },
-            "respawnSeconds": 15,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "drop": {
               "goldMin": 35,
               "goldMax": 52,
               "potionChance": 50,
               "lightShardChance": 80
-            }
+            },
+            "allowPostGame": true,
+            "allowQuestKeys": [
+              "denzel2_final"
+            ]
           },
           {
             "key": "treino_luz_brute_1",
@@ -3212,14 +3289,18 @@ window.OFDD_BOOTSTRAP_DATA = {
               "defense": 12,
               "xp": 380
             },
-            "respawnSeconds": 15,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "drop": {
               "goldMin": 42,
               "goldMax": 65,
               "potionChance": 55,
               "lightShardChance": 85
-            }
+            },
+            "allowPostGame": true,
+            "allowQuestKeys": [
+              "denzel2_final"
+            ]
           }
         ]
       },
@@ -3632,6 +3713,21 @@ window.OFDD_BOOTSTRAP_DATA = {
         "houses": [],
         "objects": [
           {
+            "key": "voltar_eldoria_campos_pos_final",
+            "type": "map_exit",
+            "questKey": "denzel2_final",
+            "targetMap": "eldoria_final",
+            "startX": 12,
+            "startY": 10,
+            "label": "ELDORIA",
+            "name": "Voltar a Eldoria",
+            "x": 1,
+            "y": 7,
+            "solid": false,
+            "text": "Volta a Eldoria.",
+            "postGameOnly": true
+          },
+          {
             "key": "voltar_elranor_campos",
             "type": "map_exit",
             "targetMap": "elranor_peace",
@@ -3707,14 +3803,18 @@ window.OFDD_BOOTSTRAP_DATA = {
               "defense": 9,
               "xp": 310
             },
-            "respawnSeconds": 15,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "drop": {
               "goldMin": 34,
               "goldMax": 55,
               "potionChance": 50,
               "lightShardChance": 75
-            }
+            },
+            "allowPostGame": true,
+            "allowQuestKeys": [
+              "denzel2_final"
+            ]
           },
           {
             "key": "campo_sombra_2",
@@ -3732,14 +3832,18 @@ window.OFDD_BOOTSTRAP_DATA = {
               "defense": 10,
               "xp": 350
             },
-            "respawnSeconds": 15,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "drop": {
               "goldMin": 40,
               "goldMax": 62,
               "potionChance": 55,
               "lightShardChance": 80
-            }
+            },
+            "allowPostGame": true,
+            "allowQuestKeys": [
+              "denzel2_final"
+            ]
           },
           {
             "key": "campo_sombra_3",
@@ -3757,14 +3861,18 @@ window.OFDD_BOOTSTRAP_DATA = {
               "defense": 12,
               "xp": 430
             },
-            "respawnSeconds": 15,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "drop": {
               "goldMin": 52,
               "goldMax": 80,
               "potionChance": 60,
               "lightShardChance": 90
-            }
+            },
+            "allowPostGame": true,
+            "allowQuestKeys": [
+              "denzel2_final"
+            ]
           }
         ]
       },
@@ -5013,12 +5121,12 @@ window.OFDD_BOOTSTRAP_DATA = {
             "key": "saida_campo_cavaleiros",
             "type": "map_exit",
             "targetMap": "d2_light_training_ground",
-            "startX": 21,
+            "startX": 19,
             "startY": 7,
             "label": "TREINO",
             "name": "Campo dos Cavaleiros",
-            "x": 2,
-            "y": 7,
+            "x": 12,
+            "y": 14,
             "solid": false,
             "text": "Segue para o campo dos Cavaleiros da Luz. Lá podes treinar e upar livremente."
           },
@@ -5026,7 +5134,7 @@ window.OFDD_BOOTSTRAP_DATA = {
             "key": "saida_campos_dourados",
             "type": "map_exit",
             "targetMap": "d2_golden_fields",
-            "startX": 2,
+            "startX": 4,
             "startY": 7,
             "label": "CAMPOS",
             "name": "Campos Dourados",
@@ -5045,7 +5153,7 @@ window.OFDD_BOOTSTRAP_DATA = {
             "y": 7,
             "solid": false,
             "text": "Com Nilzin derrotada e Lurei purificado, Eldoria celebra o retorno dos irmãos.",
-            "nextText": "Denzel e Lurei caminham lado a lado. A luz venceu as sombras, e o reino volta a respirar esperança.",
+            "nextText": "Aproxima-te da coluna de luz no centro da praça para veres os créditos finais. Depois, os portões ficam abertos para explorares Elranor livremente.",
             "noAdvance": true
           },
           {
@@ -5066,17 +5174,91 @@ window.OFDD_BOOTSTRAP_DATA = {
             "key": "final_creditos_marker",
             "type": "story_marker",
             "questKey": "denzel2_final",
-            "name": "Créditos finais",
+            "name": "Luz final — Créditos",
             "x": 12,
             "y": 5,
             "solid": false,
-            "autoTrigger": false,
+            "autoTrigger": true,
             "visual": "light_pillar",
             "lines": [
               "Denzel, Lurei e o povo de Eldoria ficam de pé diante da luz que regressou à cidade.",
               "Fim de Denzel 2 — O Príncipe das Sombras.",
+              "A história principal terminou, mas Elranor continua aberto para explorares livremente.",
+              "Podes visitar Aldara, Mirlon, Zaridon, as ruínas, os campos e as zonas de treino para continuar a upar.",
               "Criação: Emanuel Soares. Deus Connosco."
-            ]
+            ],
+            "noAdvance": true
+          },
+          {
+            "key": "saida_aldara_pos_final",
+            "type": "map_exit",
+            "targetMap": "aldara",
+            "startX": 13,
+            "startY": 8,
+            "label": "ALDARA",
+            "name": "Aldara",
+            "x": 2,
+            "y": 7,
+            "solid": false,
+            "text": "Viaja até Aldara, a aldeia onde a jornada de Denzel começou."
+          },
+          {
+            "key": "saida_mirlon_pos_final",
+            "type": "map_exit",
+            "targetMap": "mirlon",
+            "startX": 10,
+            "startY": 10,
+            "label": "MIRLON",
+            "name": "Mirlon",
+            "x": 4,
+            "y": 13,
+            "solid": false,
+            "text": "Viaja até Mirlon, uma das aldeias libertadas por Denzel."
+          },
+          {
+            "key": "saida_zaridon_pos_final",
+            "type": "map_exit",
+            "targetMap": "zaridon_ruins",
+            "startX": 10,
+            "startY": 11,
+            "label": "ZARIDON",
+            "name": "Zaridon",
+            "x": 12,
+            "y": 1,
+            "solid": false,
+            "text": "Viaja até Zaridon para rever a capital que Denzel libertou."
+          },
+          {
+            "key": "saida_ruinas_pos_final",
+            "type": "map_exit",
+            "targetMap": "d2_ruined_village",
+            "startX": 15,
+            "startY": 12,
+            "label": "RUÍNAS",
+            "name": "Ruínas",
+            "x": 20,
+            "y": 13,
+            "solid": false,
+            "text": "Viaja até às ruínas onde Denzel enfrentou a sombra de Lurei."
+          },
+          {
+            "key": "guia_mundo_aberto_final",
+            "type": "story_marker",
+            "questKey": "denzel2_final",
+            "name": "Mundo aberto",
+            "x": 12,
+            "y": 10,
+            "solid": false,
+            "noAdvance": true,
+            "visual": "light_pillar",
+            "lines": [
+              "Elranor está aberto para explorares livremente.",
+              "Usa as setas douradas com nome para viajar: ALDARA, MIRLON, ZARIDON, RUÍNAS, CAMPOS e TREINO.",
+              "Quando entrares num mapa antigo, procura a seta ELDORIA para voltar à praça principal.",
+              "Nas zonas de treino continuam a aparecer sombras para upar no pós-jogo."
+            ],
+            "text": "Elranor está aberto para explorares livremente.",
+            "nextText": "Procura as saídas douradas com nome. Em cada mapa antigo, usa ELDORIA para voltar."
           }
         ]
       },
@@ -7815,6 +7997,21 @@ window.OFDD_BOOTSTRAP_DATA = {
             "y": 6,
             "solid": false,
             "text": "Lurei recuperou a luz e a roupa dourada dos Cavaleiros. Agora já não é uma arma de Nilzin."
+          },
+          {
+            "key": "voltar_eldoria_pos_final",
+            "type": "map_exit",
+            "questKey": "denzel2_final",
+            "targetMap": "eldoria_final",
+            "startX": 12,
+            "startY": 10,
+            "label": "ELDORIA",
+            "name": "Voltar a Eldoria",
+            "x": 18,
+            "y": 12,
+            "solid": false,
+            "text": "Volta a Eldoria.",
+            "postGameOnly": true
           }
         ]
       },
@@ -11839,7 +12036,7 @@ window.OFDD_BOOTSTRAP_DATA = {
             "type": "forest_enemy",
             "enemyType": "brute",
             "questKey": "liberate_zaridon",
-            "name": "Opresor de Elranor",
+            "name": "Opressor de Elranor",
             "x": 7,
             "y": 10,
             "solid": true,
@@ -11879,6 +12076,33 @@ window.OFDD_BOOTSTRAP_DATA = {
               "potionChance": 75,
               "lightShardChance": 100
             }
+          },
+          {
+            "key": "voltar_eldoria_pos_final",
+            "type": "map_exit",
+            "questKey": "denzel2_final",
+            "targetMap": "eldoria_final",
+            "startX": 12,
+            "startY": 10,
+            "label": "ELDORIA",
+            "name": "Voltar a Eldoria",
+            "x": 10,
+            "y": 13,
+            "solid": false,
+            "text": "Volta a Eldoria.",
+            "postGameOnly": true
+          },
+          {
+            "key": "memoria_zaridon_pos_final",
+            "type": "story_marker",
+            "questKey": "denzel2_final",
+            "name": "Memória de Zaridon",
+            "x": 10,
+            "y": 8,
+            "solid": false,
+            "noAdvance": true,
+            "text": "Zaridon ainda carrega marcas da guerra.",
+            "nextText": "Mas já não é o trono de Kraidus. É uma cidade a aprender a respirar outra vez."
           }
         ]
       },
@@ -12252,6 +12476,20 @@ window.OFDD_BOOTSTRAP_DATA = {
             "noAdvance": true
           },
           {
+            "key": "voltar_mirlon_pos_final",
+            "type": "map_exit",
+            "questKey": "denzel2_final",
+            "targetMap": "mirlon",
+            "startX": 10,
+            "startY": 12,
+            "label": "MIRLON",
+            "name": "Voltar a Mirlon",
+            "x": 10,
+            "y": 1,
+            "solid": false,
+            "text": "Volta a Mirlon."
+          },
+          {
             "key": "back_to_boss",
             "type": "map_exit",
             "targetMap": "mirlon",
@@ -12281,7 +12519,7 @@ window.OFDD_BOOTSTRAP_DATA = {
             "x": 5,
             "y": 6,
             "solid": false,
-            "respawnSeconds": 8,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "autoScaleFromPlayer": -2,
             "stats": {
@@ -12292,8 +12530,10 @@ window.OFDD_BOOTSTRAP_DATA = {
               "xp": 18
             },
             "allowQuestKeys": [
-              "public_battle_mirlon"
-            ]
+              "public_battle_mirlon",
+              "denzel2_final"
+            ],
+            "allowPostGame": true
           },
           {
             "key": "grind_enemy_2",
@@ -12304,7 +12544,7 @@ window.OFDD_BOOTSTRAP_DATA = {
             "x": 14,
             "y": 6,
             "solid": false,
-            "respawnSeconds": 8,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "autoScaleFromPlayer": -2,
             "stats": {
@@ -12315,8 +12555,10 @@ window.OFDD_BOOTSTRAP_DATA = {
               "xp": 18
             },
             "allowQuestKeys": [
-              "public_battle_mirlon"
-            ]
+              "public_battle_mirlon",
+              "denzel2_final"
+            ],
+            "allowPostGame": true
           },
           {
             "key": "grind_enemy_3",
@@ -12327,7 +12569,7 @@ window.OFDD_BOOTSTRAP_DATA = {
             "x": 7,
             "y": 9,
             "solid": false,
-            "respawnSeconds": 8,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "autoScaleFromPlayer": -2,
             "stats": {
@@ -12338,8 +12580,10 @@ window.OFDD_BOOTSTRAP_DATA = {
               "xp": 18
             },
             "allowQuestKeys": [
-              "public_battle_mirlon"
-            ]
+              "public_battle_mirlon",
+              "denzel2_final"
+            ],
+            "allowPostGame": true
           },
           {
             "key": "grind_enemy_4",
@@ -12350,7 +12594,7 @@ window.OFDD_BOOTSTRAP_DATA = {
             "x": 12,
             "y": 10,
             "solid": false,
-            "respawnSeconds": 8,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "autoScaleFromPlayer": -2,
             "stats": {
@@ -12361,8 +12605,10 @@ window.OFDD_BOOTSTRAP_DATA = {
               "xp": 18
             },
             "allowQuestKeys": [
-              "public_battle_mirlon"
-            ]
+              "public_battle_mirlon",
+              "denzel2_final"
+            ],
+            "allowPostGame": true
           },
           {
             "key": "grind_enemy_5",
@@ -12373,7 +12619,7 @@ window.OFDD_BOOTSTRAP_DATA = {
             "x": 10,
             "y": 7,
             "solid": false,
-            "respawnSeconds": 8,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "autoScaleFromPlayer": -2,
             "stats": {
@@ -12384,8 +12630,10 @@ window.OFDD_BOOTSTRAP_DATA = {
               "xp": 18
             },
             "allowQuestKeys": [
-              "public_battle_mirlon"
-            ]
+              "public_battle_mirlon",
+              "denzel2_final"
+            ],
+            "allowPostGame": true
           },
           {
             "key": "grind_enemy_6",
@@ -12396,7 +12644,7 @@ window.OFDD_BOOTSTRAP_DATA = {
             "x": 4,
             "y": 11,
             "solid": false,
-            "respawnSeconds": 8,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "autoScaleFromPlayer": -2,
             "stats": {
@@ -12407,8 +12655,10 @@ window.OFDD_BOOTSTRAP_DATA = {
               "xp": 18
             },
             "allowQuestKeys": [
-              "public_battle_mirlon"
-            ]
+              "public_battle_mirlon",
+              "denzel2_final"
+            ],
+            "allowPostGame": true
           }
         ]
       },
@@ -12773,6 +13023,20 @@ window.OFDD_BOOTSTRAP_DATA = {
             "noAdvance": true
           },
           {
+            "key": "voltar_zaridon_pos_final",
+            "type": "map_exit",
+            "questKey": "denzel2_final",
+            "targetMap": "zaridon_ruins",
+            "startX": 10,
+            "startY": 12,
+            "label": "ZARIDON",
+            "name": "Voltar a Zaridon",
+            "x": 10,
+            "y": 1,
+            "solid": false,
+            "text": "Volta a Zaridon."
+          },
+          {
             "key": "back_to_boss",
             "type": "map_exit",
             "targetMap": "kraidus_castle",
@@ -12802,7 +13066,7 @@ window.OFDD_BOOTSTRAP_DATA = {
             "x": 5,
             "y": 6,
             "solid": false,
-            "respawnSeconds": 8,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "autoScaleFromPlayer": -2,
             "stats": {
@@ -12813,8 +13077,10 @@ window.OFDD_BOOTSTRAP_DATA = {
               "xp": 18
             },
             "allowQuestKeys": [
-              "kraidus_battle"
-            ]
+              "kraidus_battle",
+              "denzel2_final"
+            ],
+            "allowPostGame": true
           },
           {
             "key": "grind_enemy_2",
@@ -12825,7 +13091,7 @@ window.OFDD_BOOTSTRAP_DATA = {
             "x": 14,
             "y": 6,
             "solid": false,
-            "respawnSeconds": 8,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "autoScaleFromPlayer": -2,
             "stats": {
@@ -12836,8 +13102,10 @@ window.OFDD_BOOTSTRAP_DATA = {
               "xp": 18
             },
             "allowQuestKeys": [
-              "kraidus_battle"
-            ]
+              "kraidus_battle",
+              "denzel2_final"
+            ],
+            "allowPostGame": true
           },
           {
             "key": "grind_enemy_3",
@@ -12848,7 +13116,7 @@ window.OFDD_BOOTSTRAP_DATA = {
             "x": 7,
             "y": 9,
             "solid": false,
-            "respawnSeconds": 8,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "autoScaleFromPlayer": -2,
             "stats": {
@@ -12859,8 +13127,10 @@ window.OFDD_BOOTSTRAP_DATA = {
               "xp": 18
             },
             "allowQuestKeys": [
-              "kraidus_battle"
-            ]
+              "kraidus_battle",
+              "denzel2_final"
+            ],
+            "allowPostGame": true
           },
           {
             "key": "grind_enemy_4",
@@ -12871,7 +13141,7 @@ window.OFDD_BOOTSTRAP_DATA = {
             "x": 12,
             "y": 10,
             "solid": false,
-            "respawnSeconds": 8,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "autoScaleFromPlayer": -2,
             "stats": {
@@ -12882,8 +13152,10 @@ window.OFDD_BOOTSTRAP_DATA = {
               "xp": 18
             },
             "allowQuestKeys": [
-              "kraidus_battle"
-            ]
+              "kraidus_battle",
+              "denzel2_final"
+            ],
+            "allowPostGame": true
           },
           {
             "key": "grind_enemy_5",
@@ -12894,7 +13166,7 @@ window.OFDD_BOOTSTRAP_DATA = {
             "x": 10,
             "y": 7,
             "solid": false,
-            "respawnSeconds": 8,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "autoScaleFromPlayer": -2,
             "stats": {
@@ -12905,8 +13177,10 @@ window.OFDD_BOOTSTRAP_DATA = {
               "xp": 18
             },
             "allowQuestKeys": [
-              "kraidus_battle"
-            ]
+              "kraidus_battle",
+              "denzel2_final"
+            ],
+            "allowPostGame": true
           },
           {
             "key": "grind_enemy_6",
@@ -12917,7 +13191,7 @@ window.OFDD_BOOTSTRAP_DATA = {
             "x": 4,
             "y": 11,
             "solid": false,
-            "respawnSeconds": 8,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "autoScaleFromPlayer": -2,
             "stats": {
@@ -12928,8 +13202,10 @@ window.OFDD_BOOTSTRAP_DATA = {
               "xp": 18
             },
             "allowQuestKeys": [
-              "kraidus_battle"
-            ]
+              "kraidus_battle",
+              "denzel2_final"
+            ],
+            "allowPostGame": true
           }
         ]
       },
@@ -13294,6 +13570,21 @@ window.OFDD_BOOTSTRAP_DATA = {
             "noAdvance": true
           },
           {
+            "key": "voltar_eldoria_bosque_pos_final",
+            "type": "map_exit",
+            "questKey": "denzel2_final",
+            "targetMap": "eldoria_final",
+            "startX": 12,
+            "startY": 10,
+            "label": "ELDORIA",
+            "name": "Voltar a Eldoria",
+            "x": 10,
+            "y": 1,
+            "solid": false,
+            "text": "Volta a Eldoria.",
+            "postGameOnly": true
+          },
+          {
             "key": "back_to_boss",
             "type": "map_exit",
             "targetMap": "eldoria_ceremony_attack",
@@ -13323,7 +13614,7 @@ window.OFDD_BOOTSTRAP_DATA = {
             "x": 5,
             "y": 6,
             "solid": false,
-            "respawnSeconds": 8,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "autoScaleFromPlayer": -2,
             "stats": {
@@ -13334,8 +13625,10 @@ window.OFDD_BOOTSTRAP_DATA = {
               "xp": 18
             },
             "allowQuestKeys": [
-              "d2_nilzin_battle"
-            ]
+              "d2_nilzin_battle",
+              "denzel2_final"
+            ],
+            "allowPostGame": true
           },
           {
             "key": "grind_enemy_2",
@@ -13346,7 +13639,7 @@ window.OFDD_BOOTSTRAP_DATA = {
             "x": 14,
             "y": 6,
             "solid": false,
-            "respawnSeconds": 8,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "autoScaleFromPlayer": -2,
             "stats": {
@@ -13357,8 +13650,10 @@ window.OFDD_BOOTSTRAP_DATA = {
               "xp": 18
             },
             "allowQuestKeys": [
-              "d2_nilzin_battle"
-            ]
+              "d2_nilzin_battle",
+              "denzel2_final"
+            ],
+            "allowPostGame": true
           },
           {
             "key": "grind_enemy_3",
@@ -13369,7 +13664,7 @@ window.OFDD_BOOTSTRAP_DATA = {
             "x": 7,
             "y": 9,
             "solid": false,
-            "respawnSeconds": 8,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "autoScaleFromPlayer": -2,
             "stats": {
@@ -13380,8 +13675,10 @@ window.OFDD_BOOTSTRAP_DATA = {
               "xp": 18
             },
             "allowQuestKeys": [
-              "d2_nilzin_battle"
-            ]
+              "d2_nilzin_battle",
+              "denzel2_final"
+            ],
+            "allowPostGame": true
           },
           {
             "key": "grind_enemy_4",
@@ -13392,7 +13689,7 @@ window.OFDD_BOOTSTRAP_DATA = {
             "x": 12,
             "y": 10,
             "solid": false,
-            "respawnSeconds": 8,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "autoScaleFromPlayer": -2,
             "stats": {
@@ -13403,8 +13700,10 @@ window.OFDD_BOOTSTRAP_DATA = {
               "xp": 18
             },
             "allowQuestKeys": [
-              "d2_nilzin_battle"
-            ]
+              "d2_nilzin_battle",
+              "denzel2_final"
+            ],
+            "allowPostGame": true
           },
           {
             "key": "grind_enemy_5",
@@ -13415,7 +13714,7 @@ window.OFDD_BOOTSTRAP_DATA = {
             "x": 10,
             "y": 7,
             "solid": false,
-            "respawnSeconds": 8,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "autoScaleFromPlayer": -2,
             "stats": {
@@ -13426,8 +13725,10 @@ window.OFDD_BOOTSTRAP_DATA = {
               "xp": 18
             },
             "allowQuestKeys": [
-              "d2_nilzin_battle"
-            ]
+              "d2_nilzin_battle",
+              "denzel2_final"
+            ],
+            "allowPostGame": true
           },
           {
             "key": "grind_enemy_6",
@@ -13438,7 +13739,7 @@ window.OFDD_BOOTSTRAP_DATA = {
             "x": 4,
             "y": 11,
             "solid": false,
-            "respawnSeconds": 8,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "autoScaleFromPlayer": -2,
             "stats": {
@@ -13449,8 +13750,10 @@ window.OFDD_BOOTSTRAP_DATA = {
               "xp": 18
             },
             "allowQuestKeys": [
-              "d2_nilzin_battle"
-            ]
+              "d2_nilzin_battle",
+              "denzel2_final"
+            ],
+            "allowPostGame": true
           }
         ]
       },
@@ -13815,6 +14118,20 @@ window.OFDD_BOOTSTRAP_DATA = {
             "noAdvance": true
           },
           {
+            "key": "voltar_ruinas_pos_final",
+            "type": "map_exit",
+            "questKey": "denzel2_final",
+            "targetMap": "d2_ruined_village",
+            "startX": 2,
+            "startY": 12,
+            "label": "RUÍNAS",
+            "name": "Voltar às Ruínas",
+            "x": 10,
+            "y": 1,
+            "solid": false,
+            "text": "Volta às ruínas."
+          },
+          {
             "key": "back_to_boss",
             "type": "map_exit",
             "targetMap": "d2_ruined_village",
@@ -13844,7 +14161,7 @@ window.OFDD_BOOTSTRAP_DATA = {
             "x": 5,
             "y": 6,
             "solid": false,
-            "respawnSeconds": 8,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "autoScaleFromPlayer": -2,
             "stats": {
@@ -13856,9 +14173,13 @@ window.OFDD_BOOTSTRAP_DATA = {
             },
             "allowQuestKeys": [
               "d2_first_lurei_battle",
+              "d2_lurei_reveal",
               "d2_lurei_phase_two",
-              "d2_nilzin_final"
-            ]
+              "d2_purification",
+              "d2_nilzin_final",
+              "denzel2_final"
+            ],
+            "allowPostGame": true
           },
           {
             "key": "grind_enemy_2",
@@ -13869,7 +14190,7 @@ window.OFDD_BOOTSTRAP_DATA = {
             "x": 14,
             "y": 6,
             "solid": false,
-            "respawnSeconds": 8,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "autoScaleFromPlayer": -2,
             "stats": {
@@ -13881,9 +14202,13 @@ window.OFDD_BOOTSTRAP_DATA = {
             },
             "allowQuestKeys": [
               "d2_first_lurei_battle",
+              "d2_lurei_reveal",
               "d2_lurei_phase_two",
-              "d2_nilzin_final"
-            ]
+              "d2_purification",
+              "d2_nilzin_final",
+              "denzel2_final"
+            ],
+            "allowPostGame": true
           },
           {
             "key": "grind_enemy_3",
@@ -13894,7 +14219,7 @@ window.OFDD_BOOTSTRAP_DATA = {
             "x": 7,
             "y": 9,
             "solid": false,
-            "respawnSeconds": 8,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "autoScaleFromPlayer": -2,
             "stats": {
@@ -13906,9 +14231,13 @@ window.OFDD_BOOTSTRAP_DATA = {
             },
             "allowQuestKeys": [
               "d2_first_lurei_battle",
+              "d2_lurei_reveal",
               "d2_lurei_phase_two",
-              "d2_nilzin_final"
-            ]
+              "d2_purification",
+              "d2_nilzin_final",
+              "denzel2_final"
+            ],
+            "allowPostGame": true
           },
           {
             "key": "grind_enemy_4",
@@ -13919,7 +14248,7 @@ window.OFDD_BOOTSTRAP_DATA = {
             "x": 12,
             "y": 10,
             "solid": false,
-            "respawnSeconds": 8,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "autoScaleFromPlayer": -2,
             "stats": {
@@ -13931,9 +14260,13 @@ window.OFDD_BOOTSTRAP_DATA = {
             },
             "allowQuestKeys": [
               "d2_first_lurei_battle",
+              "d2_lurei_reveal",
               "d2_lurei_phase_two",
-              "d2_nilzin_final"
-            ]
+              "d2_purification",
+              "d2_nilzin_final",
+              "denzel2_final"
+            ],
+            "allowPostGame": true
           },
           {
             "key": "grind_enemy_5",
@@ -13944,7 +14277,7 @@ window.OFDD_BOOTSTRAP_DATA = {
             "x": 10,
             "y": 7,
             "solid": false,
-            "respawnSeconds": 8,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "autoScaleFromPlayer": -2,
             "stats": {
@@ -13956,9 +14289,13 @@ window.OFDD_BOOTSTRAP_DATA = {
             },
             "allowQuestKeys": [
               "d2_first_lurei_battle",
+              "d2_lurei_reveal",
               "d2_lurei_phase_two",
-              "d2_nilzin_final"
-            ]
+              "d2_purification",
+              "d2_nilzin_final",
+              "denzel2_final"
+            ],
+            "allowPostGame": true
           },
           {
             "key": "grind_enemy_6",
@@ -13969,7 +14306,7 @@ window.OFDD_BOOTSTRAP_DATA = {
             "x": 4,
             "y": 11,
             "solid": false,
-            "respawnSeconds": 8,
+            "respawnSeconds": 5,
             "noQuestProgress": true,
             "autoScaleFromPlayer": -2,
             "stats": {
@@ -13981,9 +14318,13 @@ window.OFDD_BOOTSTRAP_DATA = {
             },
             "allowQuestKeys": [
               "d2_first_lurei_battle",
+              "d2_lurei_reveal",
               "d2_lurei_phase_two",
-              "d2_nilzin_final"
-            ]
+              "d2_purification",
+              "d2_nilzin_final",
+              "denzel2_final"
+            ],
+            "allowPostGame": true
           }
         ]
       },
@@ -14125,9 +14466,9 @@ window.OFDD_BOOTSTRAP_DATA = {
       "cutscenes": [
         {
           "key": "rpg-base",
-          "title": "Base RPG desbloqueada",
+          "title": "Primeira força despertada",
           "image": "",
-          "text": "A partir daqui, Denzel pode ganhar XP, subir de nível e fortalecer HP, Ataque e Defesa.",
+          "text": "A partir daqui, Denzel sente a luz amadurecer com cada treino. Quanto mais resiste, mais preparado fica para enfrentar as sombras.",
           "order": 1,
           "showWhenQuestStarts": true,
           "showWhenQuestCompletes": false
@@ -15101,7 +15442,7 @@ window.OFDD_BOOTSTRAP_DATA = {
     "d2_years_later_return": {
       "key": "d2_years_later_return",
       "title": "Anos de procura",
-      "objective": "Regressa a Elranor após anos sem encontrar Lurei. Divan torna-se pupilo de Denzel.",
+      "objective": "Fala com Divan no centro de Elranor. Depois da conversa, segue para as aldeias da fronteira para enfrentar o exército de Nilzin.",
       "order": 72,
       "nextQuestKey": "d2_shadow_army",
       "completionFlag": "d2_years_later_return_done",
@@ -15233,7 +15574,7 @@ window.OFDD_BOOTSTRAP_DATA = {
     "denzel2_final": {
       "key": "denzel2_final",
       "title": "Final de Denzel 2 — O Príncipe das Sombras",
-      "objective": "Fala com Lurei, Divan e o povo. Depois revê a mensagem final e os créditos.",
+      "objective": "Fala com Lurei, Divan e o povo. Interage com a luz final para os créditos. Depois podes explorar Elranor livremente.",
       "order": 80,
       "nextQuestKey": null,
       "completionFlag": "denzel2_final_done",
@@ -15290,10 +15631,12 @@ window.OFDD_BOOTSTRAP_DATA = {
     "lurei": {
       "peace_with_lurei": [
         {
-          "text": "Vamos correr até à ponte, Denzel. Quem perder ajuda a mãe em casa."
+          "text": "Vamos correr até à ponte, Denzel. Quem perder ajuda a mãe em casa.",
+          "advancesToNextQuest": false
         },
         {
-          "text": "Um dia ainda vamos ver o mundo para além de Aldara. Mas hoje basta estarmos juntos."
+          "text": "Um dia ainda vamos ver o mundo para além de Aldara. Mas hoje basta estarmos juntos.",
+          "advancesToNextQuest": true
         }
       ],
       "talk_maria": [
@@ -15332,7 +15675,7 @@ window.OFDD_BOOTSTRAP_DATA = {
       ],
       "denzel2_lurei_walk": [
         {
-          "text": "Cinco anos... e ainda me parece estranho ver Zaridon cheia de vida outra vez.",
+          "text": "Cinco anos... e ainda me parece estranho ver Elranor cheia de vida outra vez.",
           "order": 1,
           "advancesToNextQuest": false,
           "triggerKey": ""
@@ -15569,18 +15912,22 @@ window.OFDD_BOOTSTRAP_DATA = {
       ],
       "accept_call": [
         {
-          "text": "O Cajado Sagrado não é para vaidade. É para serviço."
+          "text": "O Cajado Sagrado não é para vaidade. É para serviço.",
+          "advancesToNextQuest": false
         },
         {
-          "text": "Ele não te mostra o caminho inteiro. Mostra o próximo passo."
+          "text": "Ele não te mostra o caminho inteiro. Mostra o próximo passo.",
+          "advancesToNextQuest": true
         }
       ],
       "training_intro": [
         {
-          "text": "Sê forte e corajoso, Denzel. O Dono não te trouxe até aqui para fugires para sempre."
+          "text": "Sê forte e corajoso, Denzel. O Dono não te trouxe até aqui para fugires para sempre.",
+          "advancesToNextQuest": false
         },
         {
-          "text": "O treino vai doer, mas a luz que fica firme no sofrimento não se apaga facilmente."
+          "text": "O treino vai doer, mas a luz que fica firme no sofrimento não se apaga facilmente.",
+          "advancesToNextQuest": true
         }
       ],
       "first_training": [
@@ -16154,15 +16501,21 @@ window.OFDD_BOOTSTRAP_DATA = {
     "lurei_cavaleiro": {
       "denzel2_free_roam": [
         {
-          "text": "Cinco anos passaram e ainda me parece estranho ver Elranor a sorrir."
+          "text": "Cinco anos passaram e ainda me parece estranho ver Elranor a sorrir.",
+          "order": 1,
+          "advancesToNextQuest": false,
+          "triggerKey": ""
         },
         {
-          "text": "Mas contigo por perto, irmão, até o silêncio da cidade parece seguro."
+          "text": "Mas contigo por perto, irmão, até o silêncio da cidade parece seguro.",
+          "order": 2,
+          "advancesToNextQuest": true,
+          "triggerKey": ""
         }
       ],
       "denzel2_lurei_walk": [
         {
-          "text": "Cinco anos... e ainda me parece estranho ver Zaridon cheia de vida outra vez.",
+          "text": "Cinco anos... e ainda me parece estranho ver Elranor cheia de vida outra vez.",
           "order": 1,
           "advancesToNextQuest": false,
           "triggerKey": ""
@@ -16206,10 +16559,14 @@ window.OFDD_BOOTSTRAP_DATA = {
     "divan": {
       "d2_years_later_return": [
         {
-          "text": "Mestre Denzel, passaram anos e tu continuas a procurar Lurei."
+          "text": "Mestre Denzel, passaram anos e continuas a procurar Lurei. Eu quero aprender contigo, não só a lutar, mas a não desistir de quem amamos."
         },
         {
-          "text": "Quero aprender essa coragem. Não a coragem de vencer, mas a coragem de não desistir."
+          "text": "Espera... os sinos da fronteira estão a tocar. Se Nilzin voltou, temos de proteger as aldeias agora."
+        },
+        {
+          "text": "Segue para a fronteira, Mestre. Eu vou avisar os Cavaleiros da Luz.",
+          "advancesToNextQuest": true
         }
       ],
       "d2_first_lurei_battle": [

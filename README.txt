@@ -14,7 +14,7 @@ RECOMENDADO
 
 CONTROLOS
 - Setas ou WASD: mover Denzel.
-- E ou A: interagir.
+- E: interagir.
 - Espaço: avançar falas/cutscenes.
 - 1: atacar.
 - 2: cajado / purificar / proteger, dependendo da batalha.
@@ -48,3 +48,6 @@ Indica:
 - mapa/fase;
 - o que fizeste antes do problema;
 - print, se possível.
+
+HOTFIX v32.2
+- Corrigido bloqueio após os 5 anos: as sombras/demónios derrotados na exploração de Elranor agora podem avançar a missão quando chegam a 3/3.
