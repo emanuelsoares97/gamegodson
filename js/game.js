@@ -1197,7 +1197,7 @@ document.addEventListener('keydown', (event) => {
     useFieldPotion();
   }
 
-  if (event.key === 'r' || event.key === 'R') {
+  if (OFDD_DEV_MODE && (event.key === 'r' || event.key === 'R')) {
     resetProgress();
   }
 });
@@ -1414,6 +1414,10 @@ function isMapObjectVisible(object) {
     return currentQuest?.key === 'prayer_trial' && !flags[`prayer_${object.key}_done`];
   }
 
+  if (object.type === 'lurei_clue') {
+    return (!object.questKey || currentQuest?.key === object.questKey) && !flags[`lurei_clue_${object.key}_found`];
+  }
+
   if (['return_aldara_gate', 'nilzin_survivor', 'nilzin_heal', 'mirlon_gate', 'story_marker', 'mirlon_boss_gate', 'mirlon_minor_demon', 'map_exit'].includes(object.type)) {
     return !object.questKey || currentQuest?.key === object.questKey;
   }
@@ -1502,7 +1506,7 @@ function interact() {
 
   const house = (currentMap.mapData.houses || []).find(h => tiles.some(t => h.doorX === t.x && h.doorY === t.y));
   if (house) {
-    openDialog({ name: house.name, portrait: '' }, [{ text: 'A porta está fechada por agora. Mais tarde podemos criar interiores para cada casa.' }]);
+    openDialog({ name: house.name, portrait: '' }, [{ text: 'A porta está fechada. Depois de tudo o que aconteceu, nem todas as casas voltaram a abrir.' }]);
   }
 }
 
@@ -1710,6 +1714,11 @@ function handleObjectInteraction(object) {
     return;
   }
 
+  if (object.type === 'lurei_clue') {
+    handleLureiClue(object);
+    return;
+  }
+
   if (object.type === 'story_marker' && object.key === 'ruined_village_intro') {
     startShadowEntranceEvent(object);
     return;
@@ -1757,6 +1766,24 @@ function handleObjectInteraction(object) {
   }
 }
 
+
+function handleLureiClue(object) {
+  const flagKey = `lurei_clue_${object.key}_found`;
+  if (!flags[flagKey]) flags[flagKey] = true;
+  const found = ['lurei_clue_cloth', 'lurei_clue_shadow_mark', 'lurei_clue_broken_spear']
+    .filter(key => flags[`lurei_clue_${key}_found`]).length;
+  const lines = [
+    { text: object.text || 'Denzel encontra um rasto sombrio.' },
+  ];
+  if (found >= 3) {
+    lines.push({ text: 'As três pistas apontam para a mesma direção: uma gruta escondida no coração da floresta.', advancesToNextQuest: true });
+  } else {
+    lines.push({ text: `Pistas encontradas: ${found}/3. Ainda falta seguir mais sinais antes de avançar.` });
+  }
+  refreshQuestPanel();
+  saveProgress({ notify: true });
+  openDialog({ name: object.name || 'Pista de Lurei', portrait: '' }, lines);
+}
 
 function handleMirlonBossGate(object) {
   if (currentQuest.key !== 'mirlon_prepare') return;
@@ -2116,7 +2143,7 @@ function faceObject(object) {
 function objectInteractionRange(object) {
   if (!object) return 1;
   if (object.type === 'training_crystal') return 999;
-  if (['training_shadow', 'forest_enemy', 'healer_shop', 'north_gate', 'vision_stone', 'light_target', 'prayer_altar', 'return_aldara_gate', 'nilzin_survivor', 'nilzin_heal', 'mirlon_gate', 'story_marker', 'mirlon_boss_gate', 'mirlon_minor_demon', 'map_exit'].includes(object.type)) return 2;
+  if (['training_shadow', 'forest_enemy', 'healer_shop', 'north_gate', 'vision_stone', 'light_target', 'prayer_altar', 'return_aldara_gate', 'nilzin_survivor', 'nilzin_heal', 'mirlon_gate', 'story_marker', 'lurei_clue', 'mirlon_boss_gate', 'mirlon_minor_demon', 'map_exit'].includes(object.type)) return 2;
   return 1;
 }
 
@@ -2652,12 +2679,19 @@ function startBattle(enemy) {
     turn: 'player',
     phase: enemy.type === 'kraidus' && flags.denzel_wings_unlocked ? 2 : 1,
     kraidusHalfTriggered: Boolean(flags.denzel_wings_unlocked),
+    nilzinAuraBroken: tunedEnemy.questKey === 'd2_nilzin_battle' ? false : true,
+    nilzinFinalChains: tunedEnemy.questKey === 'd2_nilzin_final' ? 2 : 0,
+    lureiPurifyStacks: tunedEnemy.questKey === 'd2_lurei_phase_two' ? 0 : 0,
+    queuedEnemySpecial: null,
   };
   battleMessage = battleOpeningMessage(tunedEnemy);
   if (tunedEnemy.questKey === 'liberate_zaridon' && (flags.zaridonDemonsDefeated || 0) >= 3) {
     battleMessage = 'O último demónio da praça está enfraquecido. Esta é a abertura de Denzel.';
   }
   battleLog = ['Ataques podem falhar. Crítico depende da diferença de nível e do tipo de golpe.'];
+  if (tunedEnemy.questKey === 'd2_nilzin_battle') battleLog.unshift('Nilzin tem uma aura de controlo. A Luz do Cajado quebra essa proteção.');
+  if (tunedEnemy.questKey === 'd2_lurei_phase_two') battleLog.unshift('Objetivo: purificar Lurei. Usa 2 PURIFICAR sempre que tiveres energia.');
+  if (tunedEnemy.questKey === 'd2_nilzin_final') battleLog.unshift('Nilzin ainda tenta prender Lurei. A Luz Protetora quebra os laços de sombra.');
   battleFlash = 0;
   battleEffects = [];
   syncMobileControlMode();
@@ -3363,6 +3397,28 @@ function isNilzinFirstBattle() {
   return battle?.active && battle.enemy?.type === 'nilzin_shadow' && battle.enemy?.questKey === 'd2_nilzin_battle';
 }
 
+function isLureiPurificationBattle() {
+  return battle?.active && battle.enemy?.type === 'lurei_shadow' && battle.enemy?.questKey === 'd2_lurei_phase_two';
+}
+
+function isNilzinFinalBattle() {
+  return battle?.active && battle.enemy?.type === 'nilzin_shadow' && battle.enemy?.questKey === 'd2_nilzin_final';
+}
+
+function nilzinAuraActive() {
+  return isNilzinFirstBattle() && !battle.nilzinAuraBroken;
+}
+
+function nilzinFinalShieldActive() {
+  return isNilzinFinalBattle() && (battle.nilzinFinalChains || 0) > 0;
+}
+
+function currentStaffMoveName() {
+  if (isLureiPurificationBattle()) return 'Purificar';
+  if (isNilzinFinalBattle()) return 'Luz Protetora';
+  return 'Luz do Cajado';
+}
+
 function playerPowerMultiplier() {
   return flags.denzel_wings_unlocked ? 1.35 : 1;
 }
@@ -3481,12 +3537,22 @@ function playerBasicAttack() {
   const critical = rollCritical('player', 'basic', enemy);
   let damage = boostedDamage(Math.max(2, player.stats.attack + randomInt(0, 2) - enemy.defense));
   damage = applyCriticalDamage(damage, critical, 'player');
+  let resisted = false;
+  if (nilzinAuraActive()) {
+    damage = Math.max(1, Math.round(damage * 0.45));
+    resisted = true;
+  }
+  if (nilzinFinalShieldActive()) {
+    damage = Math.max(1, Math.round(damage * 0.62));
+    resisted = true;
+  }
   enemy.hp = Math.max(0, enemy.hp - damage);
   battleMessage = critical.critical
     ? `CRÍTICO! Denzel golpeia ${enemyDisplayName(enemy)} e causa ${damage} de dano.`
     : `Denzel golpeia ${enemyDisplayName(enemy)} com o cajado. Causou ${damage} de dano.`;
+  if (resisted) battleMessage += ' A sombra absorve parte do impacto.';
   showBattleActionBanner(critical.critical ? 'Crítico!' : 'Ataque Básico', critical.critical ? '#fde68a' : '#fff7c2');
-  pushBattleLog(`Ataque básico: ${damage} dano · precisão ${accuracy.chance}% · crítico ${critical.chance}%${recharged ? ` · +${recharged} EN` : ''}.`);
+  pushBattleLog(`Ataque básico: ${damage} dano · precisão ${accuracy.chance}% · crítico ${critical.chance}%${recharged ? ` · +${recharged} EN` : ''}${resisted ? ' · sombra resistiu' : ''}.`);
   addFloatingMessage(`-${damage}`, enemyScreenX(), enemyScreenY() - 10, critical.critical ? '#fde68a' : '#fecaca');
   if (critical.critical) showCriticalAt(enemyScreenX(), enemyScreenY() - 30);
   triggerBattleImpact(critical.critical ? 10 : 6, critical.critical ? '#fde68a' : '#fecaca');
@@ -3500,23 +3566,27 @@ function playerBasicAttack() {
 function playerStaffLight() {
   const enemy = battle.enemy;
   const costEnergy = 2;
+  const moveName = currentStaffMoveName();
+  const isPurify = isLureiPurificationBattle();
 
   if (!consumeStaffEnergy(costEnergy)) {
     battleMessage = `Energia do cajado insuficiente. Usa o ataque 1 para recarregar.`;
-    pushBattleLog(`Luz do Cajado precisa de ${costEnergy} energia.`);
+    pushBattleLog(`${moveName} precisa de ${costEnergy} energia.`);
     refreshStatsPanel();
     return;
   }
 
-  // A Luz do Cajado é forte, mas não é garantida: contra alvos rápidos também pode falhar.
+  // A luz é forte, mas não é garantida: contra alvos rápidos também pode falhar.
   const hpCost = player.stats.hp <= Math.ceil(player.stats.maxHp * 0.28) ? 2 : 0;
   if (hpCost) player.stats.hp = Math.max(1, player.stats.hp - hpCost);
 
   const accuracy = rollHit('player', 'staff_light', enemy);
   if (!accuracy.hit) {
-    battleMessage = `A Luz do Cajado rasga o ar, mas ${enemyDisplayName(enemy)} desvia-se.`;
-    showBattleActionBanner('Luz do Cajado', '#fde68a');
-    pushBattleLog(`Luz do Cajado falhou · precisão ${accuracy.chance}% · -${costEnergy} EN${hpCost ? ` · -${hpCost} HP` : ''}.`);
+    battleMessage = isPurify
+      ? `Denzel tenta purificar a sombra, mas Lurei recua antes da luz o alcançar.`
+      : `${moveName} rasga o ar, mas ${enemyDisplayName(enemy)} desvia-se.`;
+    showBattleActionBanner(moveName, '#fde68a');
+    pushBattleLog(`${moveName} falhou · precisão ${accuracy.chance}% · -${costEnergy} EN${hpCost ? ` · -${hpCost} HP` : ''}.`);
     showMissAt(enemyScreenX(), enemyScreenY() - 10, '#fde68a');
     addBattleEffect(flags.denzel_wings_unlocked ? 'light_rain' : 'light_beam', { x: enemyScreenX(), y: enemyScreenY(), fromX: 166, fromY: 248, toX: 474, toY: 205, life: 38 });
     refreshStatsPanel();
@@ -3527,12 +3597,50 @@ function playerStaffLight() {
   const critical = rollCritical('player', 'staff_light', enemy);
   let damage = boostedDamage(Math.max(6, player.stats.attack + 9 + randomInt(2, 6) - enemy.defense));
   damage = applyCriticalDamage(damage, critical, 'player');
+
+  let extraLog = '';
+  if (nilzinAuraActive()) {
+    battle.nilzinAuraBroken = true;
+    damage += 16;
+    extraLog = ' · aura de controlo quebrada';
+    addFloatingMessage('AURA QUEBRADA', enemyScreenX(), enemyScreenY() - 34, '#fde68a');
+    addBattleEffect('power_burst', { x: enemyScreenX(), y: enemyScreenY(), life: 62 });
+  }
+
+  if (nilzinFinalShieldActive()) {
+    battle.nilzinFinalChains = Math.max(0, (battle.nilzinFinalChains || 0) - 1);
+    damage += 12;
+    extraLog += battle.nilzinFinalChains > 0 ? ' · laço de sombra quebrado' : ' · Lurei protegido';
+    addFloatingMessage(battle.nilzinFinalChains > 0 ? 'LAÇO QUEBRADO' : 'LUREI PROTEGIDO', enemyScreenX(), enemyScreenY() - 34, '#fde68a');
+    addBattleEffect('light_beam', { x: 320, y: 228, fromX: 156, fromY: 248, toX: 410, toY: 218, life: 58 });
+  }
+
+  if (isPurify) {
+    battle.lureiPurifyStacks = Math.min(3, (battle.lureiPurifyStacks || 0) + 1);
+    enemy.attack = Math.max(14, enemy.attack - 2);
+    damage = Math.max(8, Math.round(damage * 0.9));
+    extraLog += ` · corrupção ${battle.lureiPurifyStacks}/3`;
+    addFloatingMessage('PURIFICAR', enemyScreenX(), enemyScreenY() - 34, '#fde68a');
+  }
+
   enemy.hp = Math.max(0, enemy.hp - damage);
-  battleMessage = critical.critical
-    ? `CRÍTICO! A Luz do Cajado explode contra ${enemyDisplayName(enemy)}. ${damage} de dano.`
-    : `Denzel liberta a Luz do Cajado. ${damage} de dano.`;
-  showBattleActionBanner(critical.critical ? 'Luz Crítica!' : 'Luz do Cajado', '#fde68a');
-  pushBattleLog(`Luz do Cajado: ${damage} dano · precisão ${accuracy.chance}% · crítico ${critical.chance}% · -${costEnergy} EN${hpCost ? ` · -${hpCost} HP` : ''}.`);
+
+  if (isPurify) {
+    battleMessage = critical.critical
+      ? `CRÍTICO! A luz toca Lurei sem o destruir. ${damage} de corrupção é arrancada.`
+      : `Denzel usa Purificar. A sombra recua dentro de Lurei. ${damage} de corrupção removida.`;
+  } else if (isNilzinFinalBattle()) {
+    battleMessage = critical.critical
+      ? `CRÍTICO! A Luz Protetora corta os laços de Nilzin. ${damage} de dano.`
+      : `Denzel protege Lurei e atinge Nilzin com luz. ${damage} de dano.`;
+  } else {
+    battleMessage = critical.critical
+      ? `CRÍTICO! A Luz do Cajado explode contra ${enemyDisplayName(enemy)}. ${damage} de dano.`
+      : `Denzel liberta a Luz do Cajado. ${damage} de dano.`;
+  }
+
+  showBattleActionBanner(critical.critical ? `${moveName} Crítica!` : moveName, '#fde68a');
+  pushBattleLog(`${moveName}: ${damage} dano · precisão ${accuracy.chance}% · crítico ${critical.chance}% · -${costEnergy} EN${hpCost ? ` · -${hpCost} HP` : ''}${extraLog}.`);
   addFloatingMessage(`-${damage}`, enemyScreenX(), enemyScreenY() - 10, '#fde68a');
   if (critical.critical) showCriticalAt(enemyScreenX(), enemyScreenY() - 30);
   triggerBattleImpact(critical.critical ? 14 : 10, '#fde68a');
@@ -3713,7 +3821,7 @@ function enemySpecialMove(enemy) {
     return { name: 'Golpe Corrompido', damageBonus: 9, effect: 'dark_hit', log: `${enemyDisplayName(enemy)} ataca com uma lâmina envolta em sombra.` };
   }
   if (enemy.type === 'kraidus') {
-    return { name: 'Rugido do Castelo', damageBonus: flags.kraidus_transformed ? 11 : 6, effect: 'dark_hit', log: 'Kraidus faz o castelo tremer com um rugido.' };
+    return null;
   }
   if (enemy.type === 'brute') {
     return { name: 'Investida Pesada', damageBonus: 2, effect: 'dark_hit', log: `${enemy.name} usa uma investida pesada.` };
@@ -3731,7 +3839,35 @@ function enemyBattleTurn() {
   if (!battle?.active) return;
   battle.turn = 'enemy';
   const enemy = battle.enemy;
-  const special = enemySpecialMove(enemy);
+
+  let special = null;
+  if (battle.queuedEnemySpecial) {
+    special = battle.queuedEnemySpecial;
+    battle.queuedEnemySpecial = null;
+  } else if (enemy.type === 'kraidus' && randomInt(1, 100) <= (flags.kraidus_transformed ? 34 : 26)) {
+    battle.queuedEnemySpecial = {
+      name: flags.kraidus_transformed ? 'Golpe do Rei Demoníaco' : 'Rugido do Castelo',
+      damageBonus: flags.kraidus_transformed ? 18 : 10,
+      effect: 'dark_hit',
+      log: flags.kraidus_transformed ? 'Kraidus prepara um golpe brutal com as asas abertas.' : 'Kraidus faz o castelo tremer antes do ataque.',
+    };
+    battleMessage += flags.kraidus_transformed
+      ? ' Kraidus abre as asas e prepara um golpe devastador. Defender agora pode salvar Denzel.'
+      : ' O chão treme. Kraidus está a carregar um ataque pesado.';
+    showBattleActionBanner('Ataque pesado a chegar', '#fecaca');
+    pushBattleLog('Aviso: Kraidus vai atacar forte no próximo turno. Usa 3 CURAR para reduzir dano.');
+    addBattleEffect('dark_hit', { x: enemyScreenX(), y: enemyScreenY(), life: 56 });
+    saveProgress();
+    battleTimeout = setTimeout(() => {
+      if (battle?.active) {
+        battle.turn = 'player';
+        battleMessage = 'Kraidus prepara o golpe. Escolhe a próxima ação com cuidado.';
+      }
+    }, BATTLE_ACTION_DELAY);
+    return;
+  } else {
+    special = enemySpecialMove(enemy);
+  }
   const moveType = special ? 'special' : 'basic';
   const accuracy = rollHit('enemy', moveType, enemy);
   const displayName = enemyDisplayName(enemy);
@@ -4332,7 +4468,7 @@ function drawInteractionIndicators() {
 
   const objects = (currentMap.mapData.objects || []).filter(isMapObjectVisible);
   for (const object of objects) {
-    if (!['story_marker', 'healer_shop', 'map_exit', 'mirlon_boss_gate', 'nilzin_survivor', 'nilzin_heal', 'return_aldara_gate', 'mirlon_gate'].includes(object.type)) continue;
+    if (!['story_marker', 'lurei_clue', 'healer_shop', 'map_exit', 'mirlon_boss_gate', 'nilzin_survivor', 'nilzin_heal', 'return_aldara_gate', 'mirlon_gate'].includes(object.type)) continue;
     if (object.autoTrigger && object.type === 'story_marker') continue;
     const distance = Math.abs(player.gridX - object.x) + Math.abs(player.gridY - object.y);
     if (distance <= 4) drawInteractionBubble(object.x * 32 + 16, object.y * 32 - 6, distance <= 1 ? '!' : '…');
@@ -4971,6 +5107,25 @@ function drawObject(object) {
 
   if (object.type === 'story_visual' && object.visual === 'lurei_healed') {
     drawHealedLureiObject(object);
+    return;
+  }
+
+  if (object.type === 'lurei_clue') {
+    const x = object.x * 32;
+    const y = object.y * 32;
+    const pulse = frame % 50 < 25 ? 0.34 : 0.18;
+    ctx.fillStyle = `rgba(88, 28, 135, ${pulse})`;
+    ctx.beginPath();
+    ctx.ellipse(x + 16, y + 18, 18, 10, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#c084fc';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x + 8, y + 19);
+    ctx.lineTo(x + 24, y + 13);
+    ctx.lineTo(x + 20, y + 24);
+    ctx.stroke();
+    rect(x + 11, y + 11, 10, 6, '#111827');
     return;
   }
 
@@ -6522,9 +6677,10 @@ function drawBattleOverlay() {
   ctx.lineWidth = 3;
   ctx.strokeRect(420, 350, 186, 96);
   if (battle.turn === 'player') {
+    const staffOptionLabel = isLureiPurificationBattle() ? '2 PURIFICAR' : (isNilzinFinalBattle() ? '2 PROTEGER' : '2 CAJADO');
     const opts = [
       { label: '1 ATACAR', x: 432, y: 362, w: 78, h: 24 },
-      { label: '2 CAJADO', x: 518, y: 362, w: 78, h: 24 },
+      { label: staffOptionLabel, x: 518, y: 362, w: 78, h: 24 },
       { label: '3 CURAR', x: 432, y: 394, w: 78, h: 24 },
       { label: '4 POÇÃO', x: 518, y: 394, w: 78, h: 24 },
     ];
@@ -6540,7 +6696,7 @@ function drawBattleOverlay() {
     ctx.fillStyle = '#64748b';
     ctx.font = '800 9px system-ui';
     ctx.fillText(`Atq ${hitChanceFor('player', 'basic', enemy)}%`, 440, 430);
-    ctx.fillText(`Luz ${hitChanceFor('player', 'staff_light', enemy)}%`, 520, 430);
+    ctx.fillText(`${isLureiPurificationBattle() ? 'Purif' : (isNilzinFinalBattle() ? 'Prot' : 'Luz')} ${hitChanceFor('player', 'staff_light', enemy)}%`, 520, 430);
   } else {
     ctx.fillStyle = '#64748b';
     ctx.font = '900 15px system-ui';

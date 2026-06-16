@@ -1,35 +1,50 @@
-Denzel — jogo separado em ficheiros
+DENZEL — O FILHO DO DONO / O PRÍNCIPE DAS SOMBRAS
+Versão beta para testers
 
-Como abrir:
-1. Extrai o ZIP.
-2. Abre o ficheiro index.html no navegador.
-3. No telemóvel, vira para horizontal.
+COMO ABRIR
+1. Extrai o ZIP completo.
+2. Abre a pasta extraída.
+3. Abre o ficheiro index.html no navegador.
+4. Não tires o index.html para fora da pasta, porque ele precisa das pastas js, css e assets ao lado.
 
-Atalhos de teste:
-- K: voltar diretamente à luta contra Kraidus.
-- N: ir diretamente para o mapa antes da luta contra Nilzin.
-- R: resetar progresso.
+RECOMENDADO
+- PC: Chrome ou Edge.
+- Telemóvel: usar na horizontal.
+- O som pode começar apenas depois do primeiro clique/toque, por bloqueio normal do navegador.
 
-Alterações desta versão:
-- Corrigida a troca de mapas nas laterais: agora não precisa acertar exatamente na tile da seta; se empurrar para a direita/esquerda perto da saída, muda de mapa.
-- A tecla N leva para a cerimónia invadida, no ponto antes da luta contra Nilzin.
-- Mantidas as correções anteriores de asas, Nilzin mais pequena/fraca e mapas de up antes dos bosses.
+CONTROLOS
+- Setas ou WASD: mover Denzel.
+- E ou A: interagir.
+- Espaço: avançar falas/cutscenes.
+- 1: atacar.
+- 2: cajado / purificar / proteger, dependendo da batalha.
+- 3: curar/defender.
+- 4: usar poção.
+- Botão Menu: voltar ao menu inicial.
 
-Nota:
-Se o navegador mantiver progresso antigo estranho, usa R para resetar o progresso ou limpa o armazenamento/localStorage do site.
+SAVE
+- O progresso fica guardado no navegador/dispositivo através de save local.
+- Se limpares os dados do navegador, mudares de navegador ou jogares noutro dispositivo, o save pode não aparecer.
+- Para recomeçar, usa o botão Novo jogo no menu inicial.
 
+O QUE TESTAR NESTA VERSÃO
+- Se a história é fácil de acompanhar.
+- Se as missões deixam claro para onde ir.
+- Se a busca por Lurei fica clara com as 3 pistas no bosque.
+- Se a Nilzin da cerimónia já parece uma ameaça real.
+- Se a luta contra Lurei transmite que Denzel quer salvá-lo, não destruí-lo.
+- Se Kraidus dá aviso suficiente antes dos golpes mais fortes.
+- Se o save/continuar funciona depois de bosses e cutscenes.
 
-V8 — correções de teste/bosses:
-- Monstros de treino mostram nível real escalado (Denzel - 2).
-- Monstros de treino não avançam missões nem marcam bosses como concluídos.
-- Atalhos limpam flags antigas antes de abrir cada boss.
-- NPCs duplicados foram escondidos durante as lutas nas ruínas.
-- Portal/aura da Nilzin simplificado.
+ATALHOS DE DESENVOLVIMENTO
+- Na versão normal estão desligados.
+- Para testar atalhos, abre o jogo com ?dev=1 no fim do endereço.
+- Atalhos em modo dev: M Mirlon, K Kraidus, N Nilzin, J Guerreiro Sombrio, L Lurei, F Nilzin final, R reset.
 
-Atalhos de boss:
-M = boss de Mirlon
-K = Kraidus
-N = Nilzin da cerimónia
-J = Guerreiro Sombrio
-L = Lurei
-F = Nilzin final
+COMO REPORTAR BUG
+Indica:
+- navegador e dispositivo;
+- missão atual;
+- mapa/fase;
+- o que fizeste antes do problema;
+- print, se possível.
