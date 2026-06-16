@@ -1407,3 +1407,16 @@ body.game-started .return-menu-btn {
 .title-menu:not(.hidden) + .mobile-note ~ .return-menu-btn {
   display: none;
 }
+
+
+.title-controls-note {
+  margin: 8px 0 0;
+  color: rgba(226, 232, 240, 0.86);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+body.game-paused .game-card {
+  filter: saturate(0.85) brightness(0.78);
+}

@@ -48,6 +48,9 @@ let dialogSpeaker = null;
 let cutsceneQueue = [];
 let powerEvent = null;
 let floatingMessages = [];
+let questToast = null;
+let saveToast = null;
+let lastSaveToastFrame = -999;
 let battle = null;
 let battleMessage = '';
 let battleLog = [];
@@ -192,6 +195,70 @@ const BOSS_SHORTCUTS_TEXT = 'Atalhos: M=Mirlon · K=Kraidus · N=Nilzin · J=Gue
 
 function getSceneConfig(key) {
   return (window.GAME_SCENES && window.GAME_SCENES[key]) || {};
+}
+
+function isTitleMenuOpen() {
+  const menu = document.getElementById('titleMenu');
+  return Boolean(window.OFDD_MENU_OPEN || (menu && !menu.classList.contains('hidden')));
+}
+
+function showQuestToast(title, objective = '') {
+  questToast = {
+    title: title || 'Nova missão',
+    objective: objective || '',
+    life: 170,
+    maxLife: 170,
+  };
+}
+
+function showSaveToast() {
+  if (frame - lastSaveToastFrame < 95) return;
+  lastSaveToastFrame = frame;
+  saveToast = { text: 'Progresso guardado', life: 90, maxLife: 90 };
+}
+
+function updateUiToasts() {
+  if (questToast) {
+    questToast.life -= 1;
+    if (questToast.life <= 0) questToast = null;
+  }
+  if (saveToast) {
+    saveToast.life -= 1;
+    if (saveToast.life <= 0) saveToast = null;
+  }
+}
+
+function drawUiToasts() {
+  if (questToast) {
+    const alpha = Math.max(0, Math.min(1, questToast.life / 32));
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    rect(154, 24, 332, 74, 'rgba(15, 23, 42, 0.90)');
+    ctx.strokeStyle = 'rgba(250, 204, 21, 0.82)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(154, 24, 332, 74);
+    ctx.fillStyle = '#fde68a';
+    ctx.font = '900 12px system-ui';
+    ctx.fillText('NOVA MISSÃO', 176, 47);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 16px system-ui';
+    ctx.fillText(String(questToast.title).slice(0, 38), 176, 68);
+    ctx.fillStyle = '#cbd5e1';
+    ctx.font = '800 11px system-ui';
+    ctx.fillText(String(questToast.objective).slice(0, 58), 176, 86);
+    ctx.restore();
+  }
+
+  if (saveToast) {
+    const alpha = Math.max(0, Math.min(1, saveToast.life / 28));
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    rect(486, 18, 132, 26, 'rgba(15, 23, 42, 0.84)');
+    ctx.fillStyle = '#bbf7d0';
+    ctx.font = '900 11px system-ui';
+    ctx.fillText(saveToast.text, 500, 35);
+    ctx.restore();
+  }
 }
 
 function getLureiFormConfig(formKey) {
@@ -773,9 +840,15 @@ function isCutsceneOpen() {
   return !cutscene.classList.contains('hidden');
 }
 
+function normaliseDialogLine(line) {
+  if (typeof line === 'string') return { text: line };
+  if (!line || typeof line !== 'object') return { text: String(line || '') };
+  return { ...line, text: line.text || String(line.text || '') };
+}
+
 function openDialog(speaker, lines) {
   dialogSpeaker = speaker;
-  dialogQueue = [...lines];
+  dialogQueue = (Array.isArray(lines) ? lines : [lines]).map(normaliseDialogLine).filter(item => item.text);
   showNextDialogLine();
 }
 
@@ -898,8 +971,9 @@ function advanceQuest() {
   buildNpcs();
   refreshQuestPanel();
   refreshStatsPanel();
+  showQuestToast(currentQuest?.title, currentQuest?.objective);
   maybeShowStartingCutscene();
-  saveProgress();
+  saveProgress({ notify: true });
 
   if (['d2_lurei_reveal', 'd2_purification', 'd2_nilzin_final'].includes(currentQuest?.key)) {
     setTimeout(() => {
@@ -991,8 +1065,9 @@ function applyQuestMapTransition({ resetPosition = false } = {}) {
   return true;
 }
 
-function saveProgress() {
+function saveProgress(options = {}) {
   apiPost('/api/save/', getCurrentSavePayload()).catch(() => {});
+  if (options.notify) showSaveToast();
   updateKraidusResetButton();
 }
 
@@ -1141,6 +1216,13 @@ function loop() {
 
 function update() {
   if (!DATA) return;
+
+  updateUiToasts();
+
+  if (isTitleMenuOpen()) {
+    updateFloatingMessages();
+    return;
+  }
 
   if (powerEvent?.active) {
     updatePowerEvent();
@@ -1438,6 +1520,21 @@ function getContextualFallbackDialogue(npc) {
   const finalStage = currentQuest?.key === 'denzel2_final';
   const afterKraidus = (currentQuest?.order || 0) >= (DATA.quests?.denzel1_final?.order || 999);
   const afterLurei = Boolean(flags.lurei_purified || currentQuest?.key === 'denzel2_final');
+  const afterAbduction = ['d2_lurei_abducted', 'd2_search_lurei', 'd2_shadow_cave', 'd2_lurei_corruption', 'd2_years_later_return'].includes(questKey);
+
+  if (afterAbduction && key !== 'nilzin') {
+    return [
+      { text: 'Denzel, ninguém te culpa pelo que aconteceu a Lurei.' },
+      { text: 'Mas todos sabemos que tu vais continuar a procurá-lo até a luz o alcançar outra vez.' },
+    ];
+  }
+
+  if (questKey === 'd2_years_later_return' && key !== 'nilzin') {
+    return [
+      { text: 'Passaram anos, Denzel, mas tu nunca deixaste o teu irmão para trás.' },
+      { text: 'Há feridas que só a fidelidade consegue atravessar.' },
+    ];
+  }
 
   if (key === 'lurei' || key === 'lurei_cavaleiro') {
     if (finalStage) {
@@ -2279,7 +2376,7 @@ function handleTrainingDummy(object) {
   rechargeStaffEnergy(1);
   addFloatingMessage('+22 XP treino', object.x * 32 + 16, object.y * 32 - 8, '#fde68a');
   refreshStatsPanel();
-  saveProgress();
+  saveProgress({ notify: true });
 
   const lines = [
     { text: 'Denzel pratica um golpe controlado no boneco dos Cavaleiros da Luz.' },
@@ -2496,6 +2593,37 @@ function syncMobileControlMode() {
   controls.style.display = isBattle ? 'none' : '';
 }
 
+
+function battleOpeningMessage(enemy) {
+  if (enemy?.type === 'kraidus') {
+    return flags.kraidus_transformed
+      ? 'Kraidus ruge, mas agora Denzel permanece de pé com as Asas de Luz abertas.'
+      : 'Kraidus domina o salão. A escuridão aperta, mas Denzel recusa recuar.';
+  }
+  if (enemy?.questKey === 'd2_nilzin_battle') {
+    return 'Nilzin ergue a aura negra. Denzel mantém as Asas de Luz abertas e prepara o Cajado Sagrado.';
+  }
+  if (enemy?.questKey === 'd2_nilzin_final') {
+    return 'Nilzin tenta recuperar o controlo, mas a luz de Denzel protege Lurei.';
+  }
+  if (enemy?.questKey === 'd2_first_lurei_battle') {
+    return 'O Guerreiro Sombrio avança. Denzel ainda não sabe que está diante do próprio irmão.';
+  }
+  if (enemy?.questKey === 'd2_lurei_phase_two') {
+    return 'Lurei ataca preso à sombra. Denzel não luta para o destruir, luta para o salvar.';
+  }
+  return `${enemyDisplayName(enemy)} surgiu diante de Denzel.`;
+}
+
+function battleVictoryTitle(enemy) {
+  if (enemy?.questKey === 'kraidus_battle') return 'Kraidus destruído';
+  if (enemy?.questKey === 'd2_nilzin_battle') return 'Nilzin recua';
+  if (enemy?.questKey === 'd2_first_lurei_battle') return 'A sombra recua';
+  if (enemy?.questKey === 'd2_lurei_phase_two') return 'Lurei enfraquecido';
+  if (enemy?.questKey === 'd2_nilzin_final') return 'Rainha das Sombras vencida';
+  return 'Vitória';
+}
+
 function startBattle(enemy) {
   if (battleTimeout) {
     clearTimeout(battleTimeout);
@@ -2525,7 +2653,7 @@ function startBattle(enemy) {
     phase: enemy.type === 'kraidus' && flags.denzel_wings_unlocked ? 2 : 1,
     kraidusHalfTriggered: Boolean(flags.denzel_wings_unlocked),
   };
-  battleMessage = `${enemyDisplayName(tunedEnemy)} surgiu diante de Denzel.`;
+  battleMessage = battleOpeningMessage(tunedEnemy);
   if (tunedEnemy.questKey === 'liberate_zaridon' && (flags.zaridonDemonsDefeated || 0) >= 3) {
     battleMessage = 'O último demónio da praça está enfraquecido. Esta é a abertura de Denzel.';
   }
@@ -3915,7 +4043,7 @@ function finishBattleVictory() {
   if (sustain.energyRecovered > 0) addFloatingMessage(`+${sustain.energyRecovered} EN`, player.x + 16, player.y - 92, '#fde68a');
 
   refreshStatsPanel();
-  saveProgress();
+  saveProgress({ notify: true });
 
   const lines = [
     { text: `${enemy.name} desfaz-se em partículas de luz.` },
@@ -3930,7 +4058,7 @@ function finishBattleVictory() {
   addQuestProgressLines(enemy, lines);
   closeBattle();
   buildNpcs();
-  openDialog({ name: 'Vitória', portrait: '' }, lines);
+  openDialog({ name: battleVictoryTitle(enemy), portrait: '' }, lines);
 }
 
 function applyBattleRewards(enemy) {
@@ -4181,6 +4309,7 @@ function draw() {
   drawPowerWaveEvent();
   drawHud();
   drawWorldHint();
+  drawUiToasts();
   drawBattleOverlay();
   drawQuickEventOverlay();
   drawShopOverlay();

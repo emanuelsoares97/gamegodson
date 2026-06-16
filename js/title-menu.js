@@ -3,6 +3,7 @@
   const SAVE_KEY = 'ofdd_mobile_save_v33';
   const menu = document.getElementById('titleMenu');
   if (!menu) return;
+  window.OFDD_MENU_OPEN = true;
 
   const startBtn = document.getElementById('menuStartBtn');
   const continueBtn = document.getElementById('menuContinueBtn');
@@ -45,13 +46,17 @@
   }
 
   function startGameScreen() {
+    window.OFDD_MENU_OPEN = false;
     menu.classList.add('hidden');
     document.body.classList.add('game-started');
+    document.body.classList.remove('game-paused');
   }
 
   function openTitleMenu() {
+    window.OFDD_MENU_OPEN = true;
     menu.classList.remove('hidden');
     document.body.classList.remove('game-started');
+    document.body.classList.add('game-paused');
     creditsPanel?.classList.add('hidden');
     refreshButtons();
     safeUnlockAudio().then(() => {
