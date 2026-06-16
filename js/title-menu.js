@@ -14,6 +14,7 @@
   const sfxBtn = document.getElementById('menuSfxBtn');
   const volumeRange = document.getElementById('menuVolumeRange');
   const reference = document.getElementById('titleBibleReference');
+  const returnMenuBtn = document.getElementById('returnMenuBtn');
 
   function hasSave() {
     try { return Boolean(localStorage.getItem(SAVE_KEY)); } catch (error) { return false; }
@@ -46,6 +47,17 @@
   function startGameScreen() {
     menu.classList.add('hidden');
     document.body.classList.add('game-started');
+  }
+
+  function openTitleMenu() {
+    menu.classList.remove('hidden');
+    document.body.classList.remove('game-started');
+    creditsPanel?.classList.add('hidden');
+    refreshButtons();
+    safeUnlockAudio().then(() => {
+      window.OFDD_AUDIO?.playSfx?.('click');
+      window.OFDD_AUDIO?.playMusic?.('menu');
+    });
   }
 
   function chooseTrack() {
@@ -122,6 +134,15 @@
 
   volumeRange?.addEventListener('input', () => {
     window.OFDD_AUDIO?.setVolume?.((Number(volumeRange.value) || 0) / 100);
+  });
+
+  returnMenuBtn?.addEventListener('click', openTitleMenu);
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && menu.classList.contains('hidden')) {
+      event.preventDefault();
+      openTitleMenu();
+    }
   });
 
   // Pequenos hooks de som no jogo, sem mexer na lógica principal.

@@ -1,8 +1,12 @@
+const OFDD_DEV_MODE = new URLSearchParams(window.location.search).get('dev') === '1';
+window.OFDD_DEV_MODE = OFDD_DEV_MODE;
+
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const kraidusResetBtn = document.getElementById('kraidusResetBtn');
 if (kraidusResetBtn) {
   kraidusResetBtn.addEventListener('click', () => {
+    if (!OFDD_DEV_MODE) return;
     goToKraidusFight(true);
   });
 }
@@ -490,7 +494,7 @@ function updateKraidusResetButton() {
   const btn = document.getElementById('kraidusResetBtn');
   if (!btn) return;
   const checkpoint = loadKraidusCheckpoint();
-  const canShow = Boolean(checkpoint);
+  const canShow = Boolean(checkpoint) && OFDD_DEV_MODE;
   btn.hidden = !canShow;
 }
 
@@ -1006,47 +1010,49 @@ document.addEventListener('keydown', (event) => {
 
   keys[event.key] = true;
 
-  if (event.key === 'k' || event.key === 'K') {
-    event.preventDefault();
-    goToKraidusFight(false);
-    return;
-  }
+  if (OFDD_DEV_MODE) {
+    if (event.key === 'k' || event.key === 'K') {
+      event.preventDefault();
+      goToKraidusFight(false);
+      return;
+    }
 
-  if (event.key === 'n' || event.key === 'N') {
-    event.preventDefault();
-    goToNilzinPreFight(false);
-    return;
-  }
+    if (event.key === 'n' || event.key === 'N') {
+      event.preventDefault();
+      goToNilzinPreFight(false);
+      return;
+    }
 
-  if (event.key === 'm' || event.key === 'M') {
-    event.preventDefault();
-    goToMirlonBoss(false);
-    return;
-  }
+    if (event.key === 'm' || event.key === 'M') {
+      event.preventDefault();
+      goToMirlonBoss(false);
+      return;
+    }
 
-  if (event.key === 'j' || event.key === 'J') {
-    event.preventDefault();
-    goToShadowWarriorBoss(false);
-    return;
-  }
+    if (event.key === 'j' || event.key === 'J') {
+      event.preventDefault();
+      goToShadowWarriorBoss(false);
+      return;
+    }
 
-  if (event.key === 'l' || event.key === 'L') {
-    event.preventDefault();
-    goToLureiBoss(false);
-    return;
-  }
+    if (event.key === 'l' || event.key === 'L') {
+      event.preventDefault();
+      goToLureiBoss(false);
+      return;
+    }
 
-  if (event.key === 'f' || event.key === 'F') {
-    event.preventDefault();
-    goToNilzinFinalBoss(false);
-    return;
-  }
+    if (event.key === 'f' || event.key === 'F') {
+      event.preventDefault();
+      goToNilzinFinalBoss(false);
+      return;
+    }
 
-  if (event.key === 'b' || event.key === 'B') {
-    event.preventDefault();
-    addFloatingMessage('Atalhos de boss ativos', player.x + 16, player.y - 20, '#fde68a');
-    battleLog = [BOSS_SHORTCUTS_TEXT];
-    return;
+    if (event.key === 'b' || event.key === 'B') {
+      event.preventDefault();
+      addFloatingMessage('Atalhos de boss ativos', player.x + 16, player.y - 20, '#fde68a');
+      battleLog = [BOSS_SHORTCUTS_TEXT];
+      return;
+    }
   }
 
   if (shadowEntranceEvent?.active) {
@@ -1422,7 +1428,82 @@ function getDialogueForNpc(npc) {
   const lines = DATA.dialogues[npc.characterKey]?.[currentQuest.key];
   if (lines?.length) return lines;
 
-  return [{ text: 'Ainda não tenho novas falas para esta missão.' }];
+  return getContextualFallbackDialogue(npc);
+}
+
+function getContextualFallbackDialogue(npc) {
+  const key = npc.characterKey || npc.spriteKey || 'aldeao';
+  const questKey = currentQuest?.key || '';
+  const mapKey = currentMap?.key || '';
+  const finalStage = currentQuest?.key === 'denzel2_final';
+  const afterKraidus = (currentQuest?.order || 0) >= (DATA.quests?.denzel1_final?.order || 999);
+  const afterLurei = Boolean(flags.lurei_purified || currentQuest?.key === 'denzel2_final');
+
+  if (key === 'lurei' || key === 'lurei_cavaleiro') {
+    if (finalStage) {
+      return [
+        { text: 'Denzel... obrigado por nunca desistires de mim.' },
+        { text: 'Mesmo quando eu estava preso à escuridão, tu continuaste a olhar para mim como irmão.' },
+        { text: 'Agora caminhamos juntos outra vez. A luz venceu, mas também nos ensinou a guardar o coração.' },
+      ];
+    }
+    if (afterLurei) return [{ text: 'Ainda sinto marcas da sombra, mas a luz voltou a chamar-me pelo nome.' }];
+    if (questKey.startsWith('d2_')) return [{ text: 'Fica atento, Denzel. A paz também precisa de vigilância.' }];
+    return [{ text: 'Vamos brincar mais um pouco, Denzel? Antes que a mãe nos chame para casa.' }];
+  }
+
+  if (key === 'divan') {
+    if (finalStage) return [{ text: 'Mestre Denzel, hoje entendi: a luz não abandona os seus, mesmo quando tudo parece perdido.' }];
+    return [{ text: 'Estou pronto para aprender, mestre. Mostra-me como a luz permanece firme no meio da sombra.' }];
+  }
+
+  if (key === 'cavaleiro_luz') {
+    if (finalStage) return [{ text: 'Filho do Dono, os portões estão seguros. Hoje Elranor celebra sem medo.' }];
+    return [{ text: 'Mantemos a guarda, Denzel. Enquanto houver luz, esta cidade não estará sozinha.' }];
+  }
+
+  if (key === 'velho-sabio') {
+    return [
+      { text: 'Sê forte e corajoso, Denzel. A luz não te foi dada para fugires da escuridão.' },
+      { text: 'Nem sempre vais ver o caminho todo. Às vezes, o Dono mostra apenas o próximo passo.' },
+    ];
+  }
+
+  if (key === 'maria') {
+    if (afterKraidus) return [{ text: 'Meu filho, quando te vejo de pé, lembro-me que a esperança também sobrevive às ruínas.' }];
+    return [{ text: 'Denzel, fica perto de casa. Há dias em que o coração de mãe sente coisas que ainda não consegue explicar.' }];
+  }
+
+  if (key === 'pai') {
+    if (afterKraidus) return [{ text: 'Denzel, tu carregaste um peso que nenhum pai queria ver no filho. Mas não o carregaste sozinho.' }];
+    return [{ text: 'Cuida do teu irmão, Denzel. Família é uma luz que não se larga no escuro.' }];
+  }
+
+  if (key === 'nilzin') {
+    if (questKey.startsWith('d2_')) return [{ text: 'A paz pode ser frágil, Denzel. Às vezes precisa de uma mão firme para não se quebrar.' }];
+    return [{ text: 'A tua luz incomoda as sombras, Denzel. Talvez seja por isso que todos olham para ti.' }];
+  }
+
+  if (mapKey === 'eldoria_final') {
+    return [
+      { text: 'Obrigado, Denzel. Hoje a cidade não celebra só uma vitória. Celebra o regresso da esperança.' },
+      { text: 'Que Deus continue connosco.' },
+    ];
+  }
+
+  if (mapKey === 'elranor_peace') {
+    return [{ text: 'Cinco anos de paz mudaram esta cidade. Mas todos sabem que a luz precisa de continuar acesa.' }];
+  }
+
+  if (mapKey?.includes('ruin') || mapKey?.includes('shadow') || mapKey?.includes('cave')) {
+    return [{ text: 'Há sombras por todo o lado. Mesmo assim, quando passas, a esperança parece voltar a respirar.' }];
+  }
+
+  if (afterKraidus) {
+    return [{ text: 'Denzel, o povo fala do que fizeste. Mas mais do que a tua força, lembram-se da luz que trouxeste.' }];
+  }
+
+  return [{ text: 'Força, Denzel. Mesmo quando o caminho parece pequeno, cada passo conta.' }];
 }
 
 function handleObjectInteraction(object) {

@@ -1371,3 +1371,39 @@ canvas {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* V29 — botão para voltar ao menu inicial */
+.return-menu-btn {
+  position: fixed;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  z-index: 1500;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-width: 86px;
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid rgba(250, 204, 21, 0.45);
+  border-radius: 999px;
+  background: rgba(2, 6, 23, 0.78);
+  color: #fde68a;
+  box-shadow: 0 8px 26px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+  font-weight: 1000;
+  letter-spacing: 0.02em;
+}
+
+body.game-started .return-menu-btn {
+  display: inline-flex;
+}
+
+.return-menu-btn:active {
+  transform: translateY(1px);
+}
+
+.title-menu:not(.hidden) ~ .return-menu-btn,
+.title-menu:not(.hidden) + .mobile-note ~ .return-menu-btn {
+  display: none;
+}
